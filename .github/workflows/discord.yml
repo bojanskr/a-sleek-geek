@@ -1,6 +1,14 @@
 - name: Actions for Discord
-  env:
-    DISCORD_WEBHOOK: ${{ secrets.WEBHOOK_TOKEN }}
-  uses: A-Geek-Sleek-Blog/blog-pages-content@master
-  with:
-    args: 'Hello there.'
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@master
+        - name: send custom message with args
+          uses: A-Geek-Sleek-Blog/blog-pages-content@master
+          with:
+            webhook_id: ${{ secrets.WEBHOOK_ID }}
+            webhook_token: ${{ secrets.WEBHOOK_TOKEN }}
+            args: The ${{ github.event_name }} event triggered.
+  
+  
