@@ -1,6 +1,6 @@
 - name: Actions for Discord
   env:
-    DISCORD_WEBHOOK: ${{ https://discordapp.com/api/webhooks/746850521083805747/esQrN3B_6RKbMcxBsKt4Ac_iqJ7fYHhZt5z0L1jfc2dZMdDiKgVAn2TmLA7XogA1Ducz }}
-  uses: Ilshidur/action-discord@master
+    DISCORD_WEBHOOK: ${{ secrets.WEBHOOK_TOKEN }}
+  uses: A-Geek-Sleek-Blog/blog-pages-content@master
   with:
     args: 'Hello there.'
