@@ -1,4 +1,6 @@
 - name: Actions for Discord
-  # You may pin to the exact commit or the version.
-  # uses: Ilshidur/action-discord@d7aab4ad1d1ec719b41b59cfe6781743792fa929
-  uses: Ilshidur/action-discord@0.0.2
+  env:
+    DISCORD_WEBHOOK: ${{ https://discordapp.com/api/webhooks/746850521083805747/esQrN3B_6RKbMcxBsKt4Ac_iqJ7fYHhZt5z0L1jfc2dZMdDiKgVAn2TmLA7XogA1Ducz }}
+  uses: Ilshidur/action-discord@master
+  with:
+    args: 'Hello there.'
