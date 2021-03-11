@@ -461,11 +461,11 @@ a:hover {
 }
 
 #header .logo a {
-  color: #fff;
+  color: rgb(0, 0, 0);
 }
 
 #header .logo img {
-  max-height: 40px;
+  max-height: 50px;
 }
 
 #header.header-scrolled {
