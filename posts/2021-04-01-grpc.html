@@ -1,0 +1,218 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <title>A short intro to gRPC</title>
+    <meta content="gRPC is a modern open source high performance Remote Procedure Call (RPC) framework that can run in any environment." name="description">
+    <meta content="" name="keywords">
+
+    <!-- Favicons -->
+    <link href="assets/img/favicon.png" rel="icon">
+    <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+    <!-- Vendor CSS Files -->
+    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+    <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+    <!-- Template Main CSS File -->
+    <link href="assets/css/style.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div style="min-height:249px;">
+
+        <img width="680" height="382" alt="" src="" />
+
+        <div>
+            <p class="has-text-align-justify" style="font-size:18px;">gRPC is a modern open source high performance
+                Remote Procedure Call (RPC) framework that can run in any environment. It can efficiently connect
+                services in and across data centers with pluggable support for load balancing, tracing, health checking
+                and authentication. It is also applicable in last mile of distributed computing to connect devices,
+                mobile applications and browsers to backend services.</p>
+        </div>
+    </div>
+
+
+
+    <h2 class="alignwide" id="the-main-usage-scenarios">The main usage scenarios<a
+            href="https://grpc.io/about/#the-main-usage-scenarios"></a></h2>
+
+
+
+    <ul>
+        <li>Efficiently connecting polyglot services in microservices style architecture</li>
+        <li>Connecting mobile devices, browser clients to backend services</li>
+        <li>Generating efficient client libraries</li>
+    </ul>
+
+
+
+    <h3 class="alignwide" id="the-story-behind-grpc">The story behind gRPC<a
+            href="https://grpc.io/about/#the-story-behind-grpc"></a></h3>
+
+
+
+    <p>gRPC was initially created by Google, which has used a single general-purpose RPC infrastructure
+        called&nbsp;<strong>Stubby</strong>&nbsp;to connect the large number of microservices running within and across
+        its data centers for over a decade. In March 2015, Google decided to build the next version of Stubby and make
+        it open source. The result was gRPC, which is now used in many organizations outside of Google to power use
+        cases from microservices to the “last mile” of computing (mobile, web, and Internet of Things).</p>
+
+
+
+    <h3 class="alignwide">Short Overview</h3>
+
+
+
+    <p class="has-text-align-justify">In gRPC, a client application can directly call a method on a server application
+        on a different machine as if it were a local object, making it easier for you to create distributed applications
+        and services. As in many RPC systems, gRPC is based around the idea of defining a service, specifying the
+        methods that can be called remotely with their parameters and return types. On the server side, the server
+        implements this interface and runs a gRPC server to handle client calls. On the client side, the client has a
+        stub (referred to as just a client in some languages) that provides the same methods as the server.</p>
+
+
+
+    <p style="line-height:1;">An interesting part:</p>
+
+
+    <img src="/assets/2021/04/grpc_diagram.JPG" alt="" />
+
+    <h4><strong><a href="https://www.grpc.io/docs/what-is-grpc/introduction/#overview">Official gRPC website overview</a></strong></h4>
+
+
+
+    <p class="has-normal-font-size">gRPC clients and servers can run and talk to each other in a variety of environments
+        &#8211; from servers inside Google to your own desktop &#8211; and can be written in any of <kbd>gRPC’s
+        </kbd>supported languages. So, for example, you can easily create a <kbd>gRPC </kbd>server in Java with clients
+        in Go, Python, or Ruby. In addition, the latest Google APIs will have <kbd>gRPC </kbd>versions of their
+        interfaces, letting you easily build Google functionality into your applications.</p>
+    </div>
+
+
+
+    <p style="font-size:9px;">this image and text are actually borrowed from image is actually borrowed the <a
+            href="https://www.grpc.io/docs/what-is-grpc/introduction/#overview">official gRPC docs webssite </a></p>
+
+
+
+
+
+
+
+    <h3 class="alignwide">Protocol Buffers</h3>
+
+
+
+    <p>gRPC utilizes <strong><a href="https://developers.google.com/protocol-buffers">PROTOCOL BUFFERS</a></strong>
+        &#8211; Google&#8217;s language-neutral, platform-neutral, extensible mechanism for serializing structured data
+        – think XML, but smaller, faster, and simpler.</p>
+
+
+
+    <p>A good place to start is Google&#8217;s official documentation at:</p>
+
+
+
+    <p><a rel="noreferrer noopener" href="https://developers.google.com/protocol-buffers/"
+            target="_blank">https://developers.google.com/protocol-buffers/</a></p>
+
+
+
+    <p>if you want to find out more.</p>
+
+
+
+    <h3 class="alignwide">GitHub Repositories</h3>
+
+
+
+    <p>So much for the introduction. Now let&#8217;s go to GitHub and see something more practical.</p>
+
+
+
+    <p>First let&#8217;s list the repos that are important for us here:</p>
+
+
+
+    <div>
+        <ul>
+            <li><a href="https://github.com/grpc/grpc">https://github.com/grpc/grpc </a>
+                <ul>
+                    <li>this is the main repo from where you can start, it contains tons of useful info like links to
+                        docs, chats, information on how to start using gRPC etc</li>
+                    <li>this repository contains source code for gRPC libraries implemented in multiple languages
+                        written on top of a shared C core library&nbsp;<a
+                            href="https://github.com/grpc/grpc/blob/master/src/core">src/core</a>.</li>
+                </ul>
+            </li>
+            <li><a href="https://github.com/grpc/grpc.io">https://github.com/grpc/grpc.io</a>
+                <ul>
+                    <li>the frpc.io website repo, there&#8217;s also instructions on how to get the docs for the
+                        submodules here as well</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+
+
+    <p>Now the repos for the different implementations / different technologies:</p>
+
+
+
+    <div>
+        <ul>
+            <li><a href="https://github.com/grpc/grpc-node">https://github.com/grpc/grpc-node</a>
+                <ul>
+                    <li>for node: <code>npm install grpc</code></li>
+                </ul>
+            </li>
+        </ul>
+
+
+
+        <ul>
+            <li><a
+                    href="https://github.com/grpc/grpc/tree/master/src/csharp">https://github.com/grpc/grpc/tree/master/src/csharp</a>
+                <ul>
+                    <li>gRPC C#</li>
+                    <li>there is also a new implementation for .net core 3.0 and above and that repo is at: <a
+                            href="https://github.com/grpc/grpc-dotnet">https://github.com/grpc/grpc-dotnet</a></li>
+                    <li>You can read more on <a
+                            href="https://docs.microsoft.com/en-us/aspnet/core/grpc/?view=aspnetcore-5.0">Introduction
+                            to gRPC on .NET</a></li>
+                </ul>
+            </li>
+        </ul>
+
+
+
+        <ul>
+            <li><a
+                    href="https://github.com/grpc/grpc/tree/master/src/python/grpcio">https://github.com/grpc/grpc/tree/master/src/python/grpcio</a>
+                <ul>
+                    <li>for Python installation: <code>pip install grpcio</code></li>
+                    <li>note: Python version 3.5 and greater are supported</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+
+
+
+
+
+    <p>Well that was a very short intro for now. I really can&#8217;t wait to start digging a little bit deeper into
+        this promising tech. Until then&#8230;</p>
+
+
+
+    <p>Happy coding friends!</p>
+</body>
