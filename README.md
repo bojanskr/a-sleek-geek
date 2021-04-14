@@ -14,5 +14,5 @@ The content of the blog part is static for the most common parts.
 
 There are several 'live' pages that are generated from other repos. These are community maintained, so the information is always up to date.
 
-    - free-for-dev - Free resources for developers like free tiers on the cloud providers to tools and services
-    - system-design-primer - Resources to help you learn about how to design large-scale systems with examples and real-world architecture examples
+    - free-for-dev - Free resources for developers like free tiers on the cloud providers to tools and services 
+    - system-design-primer - Resources to help you learn about how to design large-scale systems with examples and real-world architecture examples (https://github.com/bojanskr/system-design-primer), a fork of donnemartin/system-design-primer
