@@ -1,0 +1,479 @@
+---
+layout: post
+title: Custom Role Provider
+date: 2015-03-12 13:03:12.000000000 +01:00
+type: post
+parent_id: '0'
+published: true
+password: ''
+status: publish
+categories:
+- ASP.NET
+- C#
+- MEMBERSHIP
+- WEB
+tags:
+- ".NET"
+meta:
+  _wpas_skip_tumblr: '1'
+  _wpas_skip_path: '1'
+  _rest_api_published: '1'
+  _rest_api_client_id: "-1"
+  publicize_facebook_url: https://facebook.com/
+  publicize_google_plus_url: https://plus.google.com/109496988347398087332/posts/JrSCAHi4Aot
+  _wpas_done_10664478: '1'
+  _publicize_done_external: a:1:{s:11:"google_plus";a:1:{s:21:"109496988347398087332";b:1;}}
+  publicize_twitter_user: bojanskr
+  publicize_twitter_url: http://t.co/RF7p6Bkpme
+  _wpas_done_10664475: '1'
+  publicize_linkedin_url: https://www.linkedin.com/updates?discuss=&scope=13012322&stype=M&topic=5981756097004920832&type=U&a=dsvt
+  _wpas_done_10664490: '1'
+  _wpas_skip_facebook: '1'
+  _wpas_skip_google_plus: '1'
+  _wpas_skip_twitter: '1'
+  _wpas_skip_linkedin: '1'
+  _publicize_job_id: '48192075552'
+  _import_session_id: 5f57b340a397b
+  _import_original_post_id: '18'
+  original_post_id: '1655'
+  _wp_old_slug: '1655'
+author:
+  login: bojanskr
+  email: bojanskr@gmail.com
+  display_name: TehBoyan
+  first_name: Bojan
+  last_name: Skrchevski
+permalink: "/2015/03/12/custom-role-provider/"
+---
+<p><!-- wp:paragraph --></p>
+<p>In the&nbsp;<a title="Custom Membership Provider" href="http://thebojan.ninja/2015/03/12/custom-membership-provider/">first part of these series</a> we discussed and provided an example of how to&nbsp;<span style="line-height:1.5;">create a custom membership provider. We will continue these mini series with a&nbsp;</span>discussion and an example of how to create a custom role provider.&nbsp;We said in the first part that the reason of why you&nbsp;would like to create a custom membership provider would be if you want to use a&nbsp;data source different than the one supported or if you need to manage role&nbsp;information using a database schema that is different from the database schema&nbsp;used by the providers that ship with the .NET Framework. The reasons of why you&nbsp;would want to create a ciustom role provider are the same.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:html --></p>
+<div class="auto-style1">
+<div class="auto-style1">
+<p>In the example that I'm going to provide I use&nbsp;Linq-to-SQL data source and my own table structure to keep membership/user and&nbsp;role data.</p></p>
+</div>
+<div class="auto-style1">To implement a custom role provider you need to inherit&nbsp;from <span class="auto-style2">RoleProvider</span> abstract class from&nbsp;<span class="auto-style2">System.Web.Security</span> namespace. The&nbsp;<span class="auto-style2">RoleProvider</span>&nbsp;abstract&nbsp;class inherits the&nbsp;<span class="auto-style2">ProviderBase</span>&nbsp;abstract&nbsp;class from the <span class="auto-style2">System.Configuration.Provider</span>&nbsp;namespace.<br />As a result, you must implement the required members of the&nbsp;<span class="auto-style2">ProviderBase</span>&nbsp;class&nbsp;as well.</div>
+<div class="auto-style1">&nbsp;</div>
+<div class="auto-style1">Here's the example:</div>
+<pre style="font-family:arial;font-size:12px;border:1px dashed #CCCCCC;width:99%;height:auto;overflow:auto;background:#f0f0f0;padding:0;color:#000000;text-align:left;line-height:20px;"><code style="color:#000000;word-wrap:normal;">1:  namespace Custom.Role  
+2:  {  
+3:    using System;  
+4:    using System.Linq;  
+5:    using System.Configuration;  
+6:    using System.Collections.Specialized;  
+7:    using System.Configuration.Provider;  
+8:    using System.Data;  
+9:    using System.Data.SqlClient;  
+10:    using System.Security.Cryptography;  
+11:    using System.Text;  
+12:    using System.Web.Configuration;  
+13:    using System.Web.Security;  
+14:    using System.Collections.Generic;  
+15:    using Custom.CustomData;  
+16:    
+17:    public sealed class CustomRoleProvider : RoleProvider  
+18:    {  
+19:      private string applicationName;  
+20:    
+21:      public override string ApplicationName  
+22:      {  
+23:        get  
+24:        {  
+25:          return applicationName;  
+26:        }  
+27:        set  
+28:        {  
+29:          applicationName = value;  
+30:        }  
+31:      }  
+32:    
+33:      public override void Initialize(string name, NameValueCollection config)  
+34:      {  
+35:        if (config == null)  
+36:        {  
+37:          throw new ArgumentNullException("config");  
+38:        }  
+39:    
+40:        if (name == null || name.Length == 0)  
+41:        {  
+42:          name = "CustomRoleProvider";  
+43:        }  
+44:    
+45:        if (String.IsNullOrEmpty(config["description"]))  
+46:        {  
+47:          config.Remove("description");  
+48:          config.Add("description", "Custom Role Provider");  
+49:        }  
+50:    
+51:        //Initialize the abstract base class.  
+52:        base.Initialize(name, config);  
+53:    
+54:        applicationName = GetConfigValue(config["applicationName"], System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath);  
+55:      }  
+56:    
+57:      public override void AddUsersToRoles(string[] usernames, string[] roleNames)  
+58:      {  
+59:        try  
+60:        {  
+61:          using (CustomDataDataContext _db = new CustomDataDataContext())  
+62:          {  
+63:            foreach (string username in usernames)  
+64:            {  
+65:              // find each user in users table  
+66:              User user = (from u in _db.Users  
+67:                     where u.UserName == username &amp;&amp; u.DeletedOn == null  
+68:                     select u)  
+69:                    .FirstOrDefault();  
+70:    
+71:              if (user != null)  
+72:              {  
+73:                // find all roles that are contained in the roleNames  
+74:                var AllDbRoles = (from r in _db.Roles select r).ToList();  
+75:    
+76:                List&lt;int&gt; UserRoles = new List&lt;int&gt;();  
+77:    
+78:                foreach (var role in AllDbRoles)  
+79:                {  
+80:                  foreach (string roleName in roleNames)  
+81:                  {  
+82:                    if (role.RoleName == roleName)  
+83:                    {  
+84:                      UserRoles.Add(role.RoleId);  
+85:                      continue;  
+86:                    }  
+87:                  }  
+88:                }  
+89:    
+90:                if (UserRoles.Count &gt; 0)  
+91:                {  
+92:                  foreach (var roleId in UserRoles)  
+93:                  {  
+94:                    UserInRole UIR = (from uir in _db.UserInRoles  
+95:                             where uir.UserFK == user.UserId &amp;&amp; uir.RoleFK == roleId  
+96:                             select uir).FirstOrDefault();  
+97:                    if (UIR == null)  
+98:                    {  
+99:                      UIR = new UserInRole();  
+100:                      UIR.UserFK = user.UserId;  
+101:                      UIR.RoleFK = roleId;  
+102:                      UIR.CreatedOn = DateTime.Now;  
+103:                      UIR.DeletedOn = null;  
+104:                      _db.UserInRoles.InsertOnSubmit(UIR);  
+105:                      _db.SubmitChanges();  
+106:                    }  
+107:                    else  
+108:                    {  
+109:                      UIR.DeletedOn = null;  
+110:                      _db.SubmitChanges();  
+111:                    }  
+112:                  }  
+113:                }  
+114:    
+115:              }  
+116:            }  
+117:          }  
+118:        }  
+119:        catch  
+120:        {  
+121:        }  
+122:      }  
+123:    
+124:      public override void CreateRole(string roleName)  
+125:      {  
+126:        try  
+127:        {  
+128:          using (CustomDataDataContext _db = new CustomDataDataContext())  
+129:          {  
+130:            Role role = new Role();  
+131:            role.RoleName = roleName;  
+132:    
+133:            _db.Roles.InsertOnSubmit(role);  
+134:    
+135:            _db.SubmitChanges();  
+136:          }  
+137:        }  
+138:        catch  
+139:        {  
+140:        }  
+141:      }  
+142:    
+143:      public override bool DeleteRole(string roleName, bool throwOnPopulatedRole)  
+144:      {  
+145:        bool ret = false;  
+146:    
+147:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+148:        {  
+149:          try  
+150:          {  
+151:            Role role = (from r in _db.Roles  
+152:                   where r.RoleName == roleName  
+153:                   select r).SingleOrDefault();  
+154:    
+155:            if (role != null)  
+156:            {  
+157:              _db.Roles.DeleteOnSubmit(role);  
+158:    
+159:              _db.SubmitChanges();  
+160:    
+161:              ret = true;  
+162:            }  
+163:          }  
+164:          catch  
+165:          {  
+166:            ret = false;  
+167:          }  
+168:        }  
+169:    
+170:        return ret;  
+171:      }  
+172:    
+173:      public override string[] FindUsersInRole(string roleName, string usernameToMatch)  
+174:      {  
+175:        List&lt;string&gt; users = new List&lt;string&gt;();  
+176:    
+177:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+178:        {  
+179:          try  
+180:          {  
+181:            var usersInRole = from uir in _db.UserInRoles  
+182:                     where uir.Role.RoleName == roleName &amp;&amp; uir.User.UserName == usernameToMatch  
+183:                     select uir;  
+184:    
+185:            if (usersInRole != null)  
+186:            {  
+187:              foreach (var userInRole in usersInRole)  
+188:              {  
+189:                users.Add(userInRole.User.UserName);  
+190:              }  
+191:            }  
+192:          }  
+193:          catch  
+194:          {  
+195:          }  
+196:        }  
+197:    
+198:        return users.ToArray();  
+199:      }  
+200:    
+201:      public override string[] GetAllRoles()  
+202:      {  
+203:        List&lt;string&gt; roles = new List&lt;string&gt;();  
+204:    
+205:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+206:        {  
+207:          try  
+208:          {  
+209:            var dbRoles = from r in _db.Roles  
+210:                   select r;  
+211:    
+212:            foreach (var role in dbRoles)  
+213:            {  
+214:              roles.Add(role.RoleName);  
+215:            }  
+216:          }  
+217:          catch  
+218:          {  
+219:          }  
+220:        }  
+221:    
+222:        return roles.ToArray();  
+223:      }  
+224:    
+225:      public override string[] GetRolesForUser(string username)  
+226:      {  
+227:        List&lt;string&gt; roles = new List&lt;string&gt;();  
+228:    
+229:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+230:        {  
+231:          try  
+232:          {  
+233:            var dbRoles = from r in _db.UserInRoles  
+234:                   where r.User.UserName == username  
+235:                   select r;  
+236:    
+237:            foreach (var role in dbRoles)  
+238:            {  
+239:              roles.Add(role.Role.RoleName);  
+240:            }  
+241:    
+242:          }  
+243:          catch  
+244:          {  
+245:          }  
+246:        }  
+247:    
+248:        return roles.ToArray();  
+249:      }  
+250:    
+251:      public override string[] GetUsersInRole(string roleName)  
+252:      {  
+253:        List&lt;string&gt; users = new List&lt;string&gt;();  
+254:    
+255:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+256:        {  
+257:          try  
+258:          {  
+259:            var usersInRole = from uir in _db.UserInRoles  
+260:                     where uir.Role.RoleName == roleName  
+261:                     select uir;  
+262:    
+263:            if (usersInRole != null)  
+264:            {  
+265:              foreach (var userInRole in usersInRole)  
+266:              {  
+267:                users.Add(userInRole.User.UserName);  
+268:              }  
+269:            }  
+270:          }  
+271:          catch  
+272:          {  
+273:          }  
+274:        }  
+275:    
+276:        return users.ToArray();  
+277:      }  
+278:    
+279:      public override bool IsUserInRole(string username, string roleName)  
+280:      {  
+281:        bool isValid = false;  
+282:    
+283:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+284:        {  
+285:          try  
+286:          {  
+287:            var usersInRole = from uir in _db.UserInRoles  
+288:                     where uir.User.UserName == username &amp;&amp; uir.Role.RoleName == roleName  
+289:                     select uir;  
+290:    
+291:            if (usersInRole != null)  
+292:            {  
+293:              isValid = true;  
+294:            }  
+295:          }  
+296:          catch  
+297:          {  
+298:            isValid = false;  
+299:          }  
+300:        }  
+301:    
+302:        return isValid;  
+303:      }  
+304:    
+305:      public override void RemoveUsersFromRoles(string[] usernames, string[] roleNames)  
+306:      {  
+307:        try  
+308:        {  
+309:          using (CustomDataDataContext _db = new CustomDataDataContext())  
+310:          {  
+311:            foreach (string username in usernames)  
+312:            {  
+313:              // find each user in users table  
+314:              User user = (from u in _db.Users  
+315:                     where u.UserName == username &amp;&amp; u.DeletedOn == null  
+316:                     select u)  
+317:                    .FirstOrDefault();  
+318:    
+319:              if (user != null)  
+320:              {  
+321:                // find all roles that are contained in the roleNames  
+322:                var AllDbRoles = (from r in _db.Roles select r).ToList();  
+323:    
+324:                List&lt;int&gt; RemoveRoleIds = new List&lt;int&gt;();  
+325:    
+326:                foreach (var role in AllDbRoles)  
+327:                {  
+328:                  foreach (string roleName in roleNames)  
+329:                  {  
+330:                    if (role.RoleName == roleName)  
+331:                    {  
+332:                      RemoveRoleIds.Add(role.RoleId);  
+333:                      continue;  
+334:                    }  
+335:                  }  
+336:                }  
+337:    
+338:                if (RemoveRoleIds.Count &gt; 0)  
+339:                {  
+340:                  foreach (var roleId in RemoveRoleIds)  
+341:                  {  
+342:                    UserInRole UIR = (from uir in _db.UserInRoles  
+343:                             where uir.UserFK == user.UserId &amp;&amp; uir.RoleFK == roleId  
+344:                             select uir).FirstOrDefault();  
+345:                    if (UIR != null)  
+346:                    {  
+347:                      UIR.CreatedOn = DateTime.Now;  
+348:                      UIR.DeletedOn = DateTime.Now;  
+349:                      _db.SubmitChanges();  
+350:                    }  
+351:                  }  
+352:                }  
+353:    
+354:              }  
+355:            }  
+356:          }  
+357:        }  
+358:        catch  
+359:        {  
+360:        }  
+361:    
+362:    
+363:      }  
+364:    
+365:      public override bool RoleExists(string roleName)  
+366:      {  
+367:        bool isValid = false;  
+368:    
+369:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+370:        {  
+371:          // check if role exits  
+372:          if (_db.Roles.Any(r =&gt; r.RoleName == roleName))  
+373:          {  
+374:            isValid = true;  
+375:          }  
+376:        }  
+377:    
+378:        return isValid;  
+379:      }  
+380:    
+381:      private string GetConfigValue(string configValue, string defaultValue)  
+382:      {  
+383:        if (String.IsNullOrEmpty(configValue))  
+384:        {  
+385:          return defaultValue;  
+386:        }  
+387:    
+388:        return configValue;  
+389:      }  
+390:    }  
+391:  }  
+</code></pre>
+<div class="auto-style1">After we are finished with the code we need to tell the&nbsp;application that we are going to use a different role provider. We do this by&nbsp;adding a <span class="auto-style2">roleProvider</span> tag to&nbsp;<span class="auto-style2">web.config</span> under &nbsp;s<span class="auto-style2">ystem.web</span>:</div>
+<pre style="font-family:arial;font-size:12px;border:1px dashed #CCCCCC;width:99%;height:auto;overflow:auto;background:#f0f0f0;padding:0;color:#000000;text-align:left;line-height:20px;"><code style="color:#000000;word-wrap:normal;"> &lt;roleManager enabled="true" defaultProvider="WaooRoleProvider"&gt;  
+    &lt;providers&gt;  
+     &lt;clear /&gt;  
+     &lt;add name="CustomRoleProvider" type="Custom.Role.CustomRoleProvider" connectionStringName="CustomConnectionString" applicationName="/" /&gt;  
+    &lt;/providers&gt;  
+   &lt;/roleManager&gt;  
+</code></pre>
+<div class="auto-style1">...and that's it. You can use ASP.NET controls like&nbsp;LoginView or Sitemap that work with role providers. These controls are going&nbsp;to work with your provider now. Of course you can &nbsp;always use it in your code,&nbsp;whether it's to create a new role or to check if the user belongs to an existing&nbsp;one:</div>
+<pre class="brush: csharp">Roles.RoleExists("SomeRole");
+Roles.AddUserToRole("user", "SomeRole");
+</pre>
+<div class="auto-style1">There you have it. So far we've seen how to provide our&nbsp;own custom user authentication(a custom membership provider), and how to provide&nbsp;role based authentication using our own custom role provider that is using our&nbsp;own data structure.</div>
+<div class="auto-style1">&nbsp;</div>
+<div class="auto-style1">Next we will see how to extend the information that we&nbsp;have for a user if the default isn't enough for us.</div>
+<div class="auto-style1">&nbsp;</div>
+<div class="auto-style1">Until then....Happy coding.</div>
+<div class="auto-style1">&nbsp;</div>
+<div class="auto-style1">Bojan</div>
+<div class="auto-style1">&nbsp;</div>
+<div class="auto-style1">Other chapters from these series</div>
+<ul>
+<li>
+<div class="auto-style1"><a title="Custom Membership Provider" href="http://thebojan.ninja/2015/03/12/custom-membership-provider/"> Custom Membership Provider</a></div>
+</li>
+<li><a title="Custom Membership User" href="http://thebojan.ninja/2015/03/12/custom-membership-user/">Custom Membership User</a></li>
+</ul>
+</div>
+<p><!-- /wp:html --></p>

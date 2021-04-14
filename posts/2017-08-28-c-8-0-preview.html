@@ -1,0 +1,134 @@
+---
+layout: post
+title: C# 8.0 Preview
+date: 2017-08-28 08:35:25.000000000 +02:00
+type: post
+parent_id: '0'
+published: true
+password: ''
+status: publish
+categories:
+- C#
+- DEVELOPMENT
+- NEWS
+- PROGRAMMING
+tags:
+- ".NET"
+meta:
+  _edit_last: '25201996'
+  _oembed_57d2156692646845fe1ff1aa4c8b1e4c: "{{unknown}}"
+  _oembed_4743f5ef0f21222a1034db0ab56dffc8: "{{unknown}}"
+  _oembed_a386a7ea3bb13715e4eeb00684e3aa79: "{{unknown}}"
+  _oembed_76a492df9d020940e786727f34084b2a: "{{unknown}}"
+  _oembed_50a18f11225824206917ac1625f5f3d6: "{{unknown}}"
+  _oembed_604fe623483128405417031fdd6c4c7a: "{{unknown}}"
+  _rest_api_published: '1'
+  _rest_api_client_id: "-1"
+  _publicize_job_id: '8706550669'
+  _oembed_a7988af82eccce9610f7213bc1620bba: <div class="embed-vimeo"><iframe src="https://player.vimeo.com/video/164007899"
+    width="500" height="211" frameborder="0" title="The Bojan talks Azure" webkitallowfullscreen
+    mozallowfullscreen allowfullscreen></iframe></div>
+  _oembed_time_a7988af82eccce9610f7213bc1620bba: '1504268046'
+  _oembed_9a1bb120f01e4c660ae0a5562382feca: "{{unknown}}"
+  _import_session_id: 5f57b340a397b
+  _import_original_post_id: '306'
+  original_post_id: '1405'
+  _wp_old_slug: '1405'
+author:
+  login: bojanskr
+  email: bojanskr@gmail.com
+  display_name: TehBoyan
+  first_name: Bojan
+  last_name: Skrchevski
+permalink: "/2017/08/28/c-8-0-preview/"
+---
+<p><!-- wp:image {"align":"left","id":400} --></p>
+<div class="wp-block-image">
+<figure class="alignleft"><img src="{{ site.baseurl }}/assets/2017/08/logo_csharp.png" alt="logo_Csharp" class="wp-image-400" /></figure>
+</div>
+<p><!-- /wp:image --></p>
+<p><!-- wp:paragraph --></p>
+<p>The guys from Microsoft seem to be working with lightning speed. At least when it comes to C# and the .Net framework.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Looks like C# 8.0 is at our doorstep and while it's still early news it's exciting nevertheless. In a recent channel Channel 9 video Mads Torgersen has demonstrated the first few features that we can expect.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:more --><br />
+<!--more--><br />
+<!-- /wp:more --></p>
+<p><!-- wp:heading {"level":4} --></p>
+<h4><b>Nullable Reference Types</b></h4>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:paragraph --></p>
+<p>The reference types would no longer be nullable by default. Instead, you would have to explicitly mark them as nullable using the same “Type?” syntax that you use for nullable value types.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Assigning a null to a non-nullable reference type will be a compiler warning. Likewise, reading from a nullable type would be a compiler warning unless the variable in question was explicitly checked for null ahead of time. So developers would need to put question marks where appropriate:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:preformatted --></p>
+<pre class="wp-block-preformatted">[code language="csharp"]x?.MethodName();[/code]</pre>
+<p><!-- /wp:preformatted --></p>
+<p><!-- wp:heading {"level":4} --></p>
+<h4><b>Async Streams</b></h4>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:paragraph --></p>
+<p>Async streams(or foreach async) is a feature that has been talked about for a while now and we might finally get it in C# 8.0. The syntax is supposed to be:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:preformatted --></p>
+<pre class="wp-block-preformatted">[code language="csharp"]
+foreach await (string s in asyncStream)
+[/code]</pre>
+<p><!-- /wp:preformatted --></p>
+<p><!-- wp:paragraph --></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>And when defining an async iterator, you would use this function signature:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:preformatted --></p>
+<pre class="wp-block-preformatted">[code language="csharp"]
+async IAsyncEnumerable MethodName()
+[/code]</pre>
+<p><!-- /wp:preformatted --></p>
+<p><!-- wp:heading {"level":4} --></p>
+<h4><b>Default Interface Implementations</b></h4>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:paragraph --></p>
+<p>Default interface implementations are basically a (limited) form of multiple-inheritance. This will allow abstract interfaces to fully define methods just like abstract classes. However, abstract interfaces will still not be able to declare constructors or fields.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>The primary benefit of default interface implementations is that you would be able to add new methods to an existing interface without breaking backwards compatibility (sort of, because this isn’t guaranteed, as it would only work when a suitable default method can be devised).</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:heading {"level":4} --></p>
+<h4><b>Extension Everything</b></h4>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:paragraph --></p>
+<p>So far we've only been able to add extension methods in static classes. With this new feature we would finally be able to define extension properties as well as well as not have to use static classes to define your extension methods(which was 'sort of' a complaint by many people).</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Under the new design, there is a new top-level construct called an “extension”. For example, if you want to create extension methods and properties for a Customer class you would write:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:preformatted --></p>
+<pre class="wp-block-preformatted">[code language="csharp"]
+extension ProductExt extends Product {
+//methods and properties go here
+}
+[/code]</pre>
+<p><!-- /wp:preformatted --></p>
+<p><!-- wp:paragraph --></p>
+<p>In addition to properties, events, and operator overloads, they are even considering allowing extension constructors (could be very interesting in factory and object pooling scenarios).</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:heading {"level":4} --></p>
+<h4><strong>More info</strong></h4>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:paragraph --></p>
+<p>For more information, you can watch the <a href="https://channel9.msdn.com/Blogs/Seth-Juarez/A-Preview-of-C-8-with-Mads-Torgersen">Channel9 video with Mads Torgersen </a>.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>You can also follow the progress of the C# language design <a href="https://github.com/dotnet/csharplang">in the official C# language repo on GitHub</a>.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>'Till next time...Happy coding.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>/Bojan</p>
+<p><!-- /wp:paragraph --></p>

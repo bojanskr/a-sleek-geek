@@ -1,0 +1,836 @@
+---
+layout: post
+title: Custom Membership Provider
+date: 2015-03-12 13:00:34.000000000 +01:00
+type: post
+parent_id: '0'
+published: true
+password: ''
+status: publish
+categories:
+- ASP.NET
+- C#
+- MEMBERSHIP
+- WEB
+tags:
+- ".NET"
+meta:
+  _wpas_skip_10664490: '1'
+  _rest_api_published: '1'
+  _rest_api_client_id: "-1"
+  _import_session_id: 5f57b340a397b
+  _import_original_post_id: '15'
+  original_post_id: '1655'
+  _wp_old_slug: '1655'
+author:
+  login: bojanskr
+  email: bojanskr@gmail.com
+  display_name: TehBoyan
+  first_name: Bojan
+  last_name: Skrchevski
+permalink: "/2015/03/12/custom-membership-provider/"
+---
+<p><!-- wp:heading {"level":5} --></p>
+<h5><strong>Custom Membership, Role Providers, Membership User Series.</strong></h5>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:paragraph --></p>
+<p>Since these articles and the&nbsp;examples&nbsp;in them are pretty long, it could get&nbsp;pretty&nbsp;cumbersome to have all of them in one go so I&nbsp;split&nbsp;them up in several articles.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Here goes the first one.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p><strong><span class="Apple-style-span" style="font-size:large;">The Custom Membership Provider Implementation</span></strong></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>There are many times when the MembershipProvider and its&nbsp;underlying database construction aren’t sufficient enough for our needs. As&nbsp;MSDN states there are two reasons why one would want a custom&nbsp;MembersipProvider:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:list --></p>
+<ul>
+<li class="MsoNormal">You need to store membership information in a data source that is not<br />supported by the membership providers included with the .NET Framework,<br />such as a FoxPro database, an Oracle database, or other data sources.</li>
+<li class="MsoNormal">You&nbsp;need to manage membership information using a database schema that is<br />different from the database schema used by the providers that ship with<br />the .NET Framework. A common example of this would be membership data that<br />already exists in a SQL Server database for a company or Web site.</li>
+</ul>
+<p><!-- /wp:list --></p>
+<p><!-- wp:more --><br />
+<!--more--><br />
+<!-- /wp:more --></p>
+<p><!-- wp:paragraph --></p>
+<p>To implement a custom membership provider, you create a&nbsp;class that inherits the&nbsp;<span style="font-family:'Courier New';line-height:115%;">MembershipProvider</span>&nbsp;abstract class from the&nbsp;<span style="font-family:'Courier New';line-height:115%;">System.Web.Security</span>&nbsp;namespace.<br />The&nbsp;<span style="font-family:'Courier New';line-height:115%;">MembershipProvider&nbsp;</span>abstract class inherits the&nbsp;<span style="font-family:'Courier New';line-height:115%;">ProviderBase</span>&nbsp;abstract class from&nbsp;the <span style="font-family:'Courier New';line-height:115%;">System.Configuration.Provider</span>&nbsp;namespace,&nbsp;so you must implement the required members of the&nbsp;<span style="font-family:'Courier New';line-height:115%;">ProviderBase</span>&nbsp;class as well.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>For example this custom membership provider uses LINQ-to-SQL and my own tables in MS SQL Server to store and retrieve membership information in my database.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Now, I have to say in advance...it's ugly. The only reason it is this long is because it is supposed to serve as an example and it could be a good example for refactoring.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:syntaxhighlighter/code --></p>
+<pre class="wp-block-syntaxhighlighter-code">1:  namespace Custom.Membership  
+2:  {  
+3:    using System;  
+4:    using System.Linq;  
+5:    using System.Configuration;  
+6:    using System.Collections.Specialized;  
+7:    using System.Configuration.Provider;  
+8:    using System.Data;  
+9:    using System.Data.SqlClient;  
+10:    using System.Security.Cryptography;  
+11:    using System.Text;  
+12:    using System.Web.Configuration;  
+13:    using System.Web.Security;  
+14:     
+15:    public sealed class CustomMembershipProvider : MembershipProvider  
+16:    {  
+17:    
+18:      #region Class Variables  
+19:    
+20:      private int newPasswordLength = 8;  
+21:      private string connectionString;  
+22:      private string applicationName;  
+23:      private bool enablePasswordReset;  
+24:      private bool enablePasswordRetrieval;  
+25:      private bool requiresQuestionAndAnswer;  
+26:      private bool requiresUniqueEmail;  
+27:      private int maxInvalidPasswordAttempts;  
+28:      private int passwordAttemptWindow;  
+29:      private MembershipPasswordFormat passwordFormat;  
+30:      private int minRequiredNonAlphanumericCharacters;  
+31:      private int minRequiredPasswordLength;  
+32:      private string passwordStrengthRegularExpression;  
+33:      private MachineKeySection machineKey; //Used when determining encryption key values.  
+34:    
+35:      #endregion  
+36:    
+37:      #region Properties  
+38:    
+39:      public override string ApplicationName  
+40:      {  
+41:        get  
+42:        {  
+43:          return applicationName;  
+44:        }  
+45:        set  
+46:        {  
+47:          applicationName = value;  
+48:        }  
+49:      }  
+50:    
+51:      public override bool EnablePasswordReset  
+52:      {  
+53:        get  
+54:        {  
+55:          return enablePasswordReset;  
+56:        }  
+57:      }  
+58:    
+59:      public override bool EnablePasswordRetrieval  
+60:      {  
+61:        get  
+62:        {  
+63:          return enablePasswordRetrieval;  
+64:        }  
+65:      }  
+66:    
+67:      public override bool RequiresQuestionAndAnswer  
+68:      {  
+69:        get  
+70:        {  
+71:          return requiresQuestionAndAnswer;  
+72:        }  
+73:      }  
+74:    
+75:      public override bool RequiresUniqueEmail  
+76:      {  
+77:        get  
+78:        {  
+79:          return requiresUniqueEmail;  
+80:        }  
+81:      }  
+82:    
+83:      public override int MaxInvalidPasswordAttempts  
+84:      {  
+85:        get  
+86:        {  
+87:          return maxInvalidPasswordAttempts;  
+88:        }  
+89:      }  
+90:    
+91:      public override int PasswordAttemptWindow  
+92:      {  
+93:        get  
+94:        {  
+95:          return passwordAttemptWindow;  
+96:        }  
+97:      }  
+98:    
+99:      public override MembershipPasswordFormat PasswordFormat  
+100:      {  
+101:        get  
+102:        {  
+103:          return passwordFormat;  
+104:        }  
+105:      }  
+106:    
+107:      public override int MinRequiredNonAlphanumericCharacters  
+108:      {  
+109:        get  
+110:        {  
+111:          return minRequiredNonAlphanumericCharacters;  
+112:        }  
+113:      }  
+114:    
+115:      public override int MinRequiredPasswordLength  
+116:      {  
+117:        get  
+118:        {  
+119:          return minRequiredPasswordLength;  
+120:        }  
+121:      }  
+122:    
+123:      public override string PasswordStrengthRegularExpression  
+124:      {  
+125:        get  
+126:        {  
+127:          return passwordStrengthRegularExpression;  
+128:        }  
+129:      }  
+130:    
+131:      #endregion  
+132:    
+133:      #region MembershipProvider overrides  
+134:    
+135:      public override void Initialize(string name, NameValueCollection config)  
+136:      {  
+137:        if (config == null)  
+138:        {  
+139:          string configPath = "~/web.config";  
+140:          Configuration NexConfig = WebConfigurationManager.OpenWebConfiguration(configPath);  
+141:          MembershipSection section = (MembershipSection)NexConfig.GetSection("system.web/membership");  
+142:          ProviderSettingsCollection settings = section.Providers;  
+143:          NameValueCollection membershipParams = settings[section.DefaultProvider].Parameters;  
+144:          config = membershipParams;  
+145:        }  
+146:    
+147:        if (name == null || name.Length == 0)  
+148:        {  
+149:          name = "CustomMembershipProvider";  
+150:        }  
+151:    
+152:        if (String.IsNullOrEmpty(config["description"]))  
+153:        {  
+154:          config.Remove("description");  
+155:          config.Add("description", "Custom Membership Provider");  
+156:        }  
+157:    
+158:        //Initialize the abstract base class.  
+159:        base.Initialize(name, config);  
+160:    
+161:        applicationName = GetConfigValue(config["applicationName"], System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath);  
+162:        maxInvalidPasswordAttempts = Convert.ToInt32(GetConfigValue(config["maxInvalidPasswordAttempts"], "5"));  
+163:        passwordAttemptWindow = Convert.ToInt32(GetConfigValue(config["passwordAttemptWindow"], "10"));  
+164:        minRequiredNonAlphanumericCharacters = Convert.ToInt32(GetConfigValue(config["minRequiredAlphaNumericCharacters"], "1"));  
+165:        minRequiredPasswordLength = Convert.ToInt32(GetConfigValue(config["minRequiredPasswordLength"], "7"));  
+166:        passwordStrengthRegularExpression = Convert.ToString(GetConfigValue(config["passwordStrengthRegularExpression"], String.Empty));  
+167:        enablePasswordReset = Convert.ToBoolean(GetConfigValue(config["enablePasswordReset"], "true"));  
+168:        enablePasswordRetrieval = Convert.ToBoolean(GetConfigValue(config["enablePasswordRetrieval"], "true"));  
+169:        requiresQuestionAndAnswer = Convert.ToBoolean(GetConfigValue(config["requiresQuestionAndAnswer"], "false"));  
+170:        requiresUniqueEmail = Convert.ToBoolean(GetConfigValue(config["requiresUniqueEmail"], "true"));  
+171:    
+172:        string temp_format = config["passwordFormat"];  
+173:        if (temp_format == null)  
+174:        {  
+175:          temp_format = "Hashed";  
+176:        }  
+177:    
+178:        switch (temp_format)  
+179:        {  
+180:          case "Hashed":  
+181:            passwordFormat = MembershipPasswordFormat.Hashed;  
+182:            break;  
+183:          case "Encrypted":  
+184:            passwordFormat = MembershipPasswordFormat.Encrypted;  
+185:            break;  
+186:          case "Clear":  
+187:            passwordFormat = MembershipPasswordFormat.Clear;  
+188:            break;  
+189:          default:  
+190:            throw new ProviderException("Password format not supported.");  
+191:        }  
+192:    
+193:        ConnectionStringSettings ConnectionStringSettings = ConfigurationManager.ConnectionStrings[config["connectionStringName"]];  
+194:    
+195:        if ((ConnectionStringSettings == null) || (ConnectionStringSettings.ConnectionString.Trim() == String.Empty))  
+196:        {  
+197:          throw new ProviderException("Connection string cannot be blank.");  
+198:        }  
+199:    
+200:        connectionString = ConnectionStringSettings.ConnectionString;  
+201:    
+202:        //Get encryption and decryption key information from the configuration.  
+203:        System.Configuration.Configuration cfg = WebConfigurationManager.OpenWebConfiguration(System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath);  
+204:        machineKey = cfg.GetSection("system.web/machineKey") as MachineKeySection;  
+205:    
+206:        if (machineKey.ValidationKey.Contains("AutoGenerate"))  
+207:        {  
+208:          if (PasswordFormat != MembershipPasswordFormat.Clear)  
+209:          {  
+210:            throw new ProviderException("Hashed or Encrypted passwords are not supported with auto-generated keys.");  
+211:          }  
+212:        }  
+213:      }  
+214:    
+215:      public override bool ChangePassword(string username, string oldPassword, string newPassword)  
+216:      {  
+217:        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(oldPassword) || string.IsNullOrWhiteSpace(newPassword)) return false;  
+218:    
+219:        if (oldPassword == newPassword) return false;  
+220:    
+221:        CustomMembershipUser user = GetUser(username);  
+222:    
+223:        if (user == null) return false;  
+224:    
+225:        CustomDataDataContext db = new CustomDataDataContext();  
+226:        var RawUser = (from u in db.Users  
+227:                where u.UserName == user.UserName &amp;&amp; u.DeletedOn == null  
+228:                select u).FirstOrDefault();  
+229:    
+230:        if (string.IsNullOrWhiteSpace(RawUser.Password)) return false;  
+231:    
+232:        RawUser.Password = EncodePassword(newPassword);  
+233:    
+234:        db.SubmitChanges();  
+235:    
+236:        return true;  
+237:      }  
+238:    
+239:      public override bool ChangePasswordQuestionAndAnswer(string username, string password, string newPasswordQuestion, string newPasswordAnswer)  
+240:      {  
+241:        throw new NotImplementedException();  
+242:      }  
+243:    
+244:      public CustomMembershipUser CreateUser(  
+245:          string username,  
+246:          string password,  
+247:          string email,  
+248:          string passwordQuestion,  
+249:          string passwordAnswer,  
+250:          bool isApproved,  
+251:          object providerUserKey,  
+252:          out MembershipCreateStatus status,  
+253:          int companyID,  
+254:          string name,  
+255:          string phoneNumber)  
+256:      {  
+257:        ValidatePasswordEventArgs args = new ValidatePasswordEventArgs(username, password, true);  
+258:    
+259:        OnValidatingPassword(args);  
+260:    
+261:        if (args.Cancel)  
+262:        {  
+263:          status = MembershipCreateStatus.InvalidPassword;  
+264:          return null;  
+265:        }  
+266:    
+267:        if ((RequiresUniqueEmail &amp;&amp; (GetUserNameByEmail(email) != String.Empty)))  
+268:        {  
+269:          status = MembershipCreateStatus.DuplicateEmail;  
+270:          return null;  
+271:        }  
+272:    
+273:        CustomMembershipUser CustomMembershipUser = GetUser(username);  
+274:    
+275:        if (CustomMembershipUser == null)  
+276:        {  
+277:          try  
+278:          {  
+279:            using (CustomDataDataContext _db = new CustomDataDataContext())  
+280:            {  
+281:              User user = new User();  
+282:              user.CompanyFK = companyID;  
+283:              user.Name = name;  
+284:              user.UserName = username;  
+285:              user.Password = EncodePassword(password);  
+286:              user.Email = email.ToLower();  
+287:              user.CreatedOn = DateTime.Now;  
+288:              user.ModifiedOn = DateTime.Now;  
+289:              user.Phone = phoneNumber;  
+290:              _db.Users.InsertOnSubmit(user);  
+291:    
+292:              _db.SubmitChanges();  
+293:    
+294:              status = MembershipCreateStatus.Success;  
+295:    
+296:              return GetUser(username);  
+297:            }  
+298:    
+299:          }  
+300:          catch  
+301:          {  
+302:            status = MembershipCreateStatus.ProviderError;  
+303:          }  
+304:        }  
+305:        else  
+306:        {  
+307:          status = MembershipCreateStatus.DuplicateUserName;  
+308:        }  
+309:    
+310:        return null;  
+311:      }  
+312:    
+313:      public override MembershipUser CreateUser(  
+314:        string username,  
+315:        string password,  
+316:        string email,  
+317:        string passwordQuestion,  
+318:        string passwordAnswer,  
+319:        bool isApproved,  
+320:        object providerUserKey,  
+321:        out MembershipCreateStatus status)  
+322:      {  
+323:        ValidatePasswordEventArgs args = new ValidatePasswordEventArgs(username, password, true);  
+324:    
+325:        OnValidatingPassword(args);  
+326:    
+327:        if (args.Cancel)  
+328:        {  
+329:          status = MembershipCreateStatus.InvalidPassword;  
+330:          return null;  
+331:        }  
+332:    
+333:        if ((RequiresUniqueEmail &amp;&amp; (GetUserNameByEmail(email) != String.Empty)))  
+334:        {  
+335:          status = MembershipCreateStatus.DuplicateEmail;  
+336:          return null;  
+337:        }  
+338:    
+339:        MembershipUser membershipUser = GetUser(username, false);  
+340:    
+341:        if (membershipUser == null)  
+342:        {  
+343:          try  
+344:          {  
+345:            using (CustomDataDataContext _db = new CustomDataDataContext())  
+346:            {  
+347:              User user = new User();  
+348:              user.CompanyFK = 0;  
+349:              user.Name = "";  
+350:              user.UserName = username;  
+351:              user.Password = EncodePassword(password);  
+352:              user.Email = email.ToLower();  
+353:              user.CreatedOn = DateTime.Now;  
+354:              user.ModifiedOn = DateTime.Now;  
+355:    
+356:              _db.Users.InsertOnSubmit(user);  
+357:    
+358:              _db.SubmitChanges();  
+359:    
+360:              status = MembershipCreateStatus.Success;  
+361:    
+362:              return GetUser(username, false);  
+363:            }  
+364:    
+365:          }  
+366:          catch  
+367:          {  
+368:            status = MembershipCreateStatus.ProviderError;  
+369:          }  
+370:        }  
+371:        else  
+372:        {  
+373:          status = MembershipCreateStatus.DuplicateUserName;  
+374:        }  
+375:    
+376:        return null;  
+377:      }  
+378:    
+379:      public override bool DeleteUser(string username, bool deleteAllRelatedData)  
+380:      {  
+381:        bool ret = false;  
+382:    
+383:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+384:        {  
+385:          try  
+386:          {  
+387:            User user = (from u in _db.Users  
+388:                   where u.UserName == username &amp;&amp; u.DeletedOn == null  
+389:                   select u).FirstOrDefault();  
+390:    
+391:            if (user != null)  
+392:            {  
+393:              _db.Users.DeleteOnSubmit(user);  
+394:    
+395:              _db.SubmitChanges();  
+396:    
+397:              ret = true;  
+398:            }  
+399:          }  
+400:          catch  
+401:          {  
+402:            ret = false;  
+403:          }  
+404:        }  
+405:    
+406:        return ret;  
+407:      }  
+408:    
+409:      public override MembershipUserCollection FindUsersByEmail(string emailToMatch, int pageIndex, int pageSize, out int totalRecords)  
+410:      {  
+411:        throw new NotImplementedException();  
+412:      }  
+413:    
+414:      public override MembershipUserCollection FindUsersByName(string usernameToMatch, int pageIndex, int pageSize, out int totalRecords)  
+415:      {  
+416:        throw new NotImplementedException();  
+417:      }  
+418:    
+419:      public override MembershipUserCollection GetAllUsers(int pageIndex, int pageSize, out int totalRecords)  
+420:      {  
+421:        throw new NotImplementedException();  
+422:      }  
+423:    
+424:      public override int GetNumberOfUsersOnline()  
+425:      {  
+426:        throw new NotImplementedException();  
+427:      }  
+428:    
+429:      public override string GetPassword(string username, string answer)  
+430:      {  
+431:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+432:        {  
+433:          try  
+434:          {  
+435:            var pass = (from p in _db.Users  
+436:                  where p.UserName == username &amp;&amp; p.DeletedOn == null  
+437:                  select p.Password).FirstOrDefault();  
+438:            if (!string.IsNullOrWhiteSpace(pass))  
+439:              return UnEncodePassword(pass);  
+440:          }  
+441:          catch { }  
+442:        }  
+443:        return null;  
+444:      }  
+445:    
+446:    
+447:      public CustomMembershipUser GetUser(string username)  
+448:      {  
+449:        CustomMembershipUser CustomMembershipUser = null;  
+450:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+451:        {  
+452:          try  
+453:          {  
+454:            User user = (from u in _db.Users  
+455:                   where u.UserName == username &amp;&amp; u.DeletedOn == null  
+456:                   select u)  
+457:                   .FirstOrDefault();  
+458:    
+459:            if (user != null)  
+460:            {  
+461:              CustomMembershipUser = new CustomMembershipUser(  
+462:                this.Name,  
+463:                user.UserName,  
+464:                null,  
+465:                user.Email,  
+466:                "",  
+467:                "",  
+468:                true,  
+469:                false,  
+470:                user.CreatedOn,  
+471:                DateTime.Now,  
+472:                DateTime.Now,  
+473:                default(DateTime),  
+474:                default(DateTime),  
+475:                user.CompanyFK,  
+476:                user.Name);  
+477:            }  
+478:          }  
+479:          catch  
+480:          {  
+481:          }  
+482:        }  
+483:    
+484:        return CustomMembershipUser;  
+485:      }  
+486:    
+487:      public override MembershipUser GetUser(string username, bool userIsOnline)  
+488:      {  
+489:        MembershipUser membershipUser = null;  
+490:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+491:        {  
+492:          try  
+493:          {  
+494:            User user = (from u in _db.Users  
+495:                   where u.UserName == username &amp;&amp; u.DeletedOn == null  
+496:                   select u)  
+497:                   .FirstOrDefault();  
+498:    
+499:            if (user != null)  
+500:            {  
+501:              membershipUser = new MembershipUser(this.Name,  
+502:                user.UserName,  
+503:                null,  
+504:                user.Email,  
+505:                "",  
+506:                "",  
+507:                true,  
+508:                false,  
+509:                user.CreatedOn,  
+510:                DateTime.Now,  
+511:                DateTime.Now,  
+512:                default(DateTime),  
+513:                default(DateTime));  
+514:            }  
+515:          }  
+516:          catch  
+517:          {  
+518:          }  
+519:        }  
+520:    
+521:        return membershipUser;  
+522:      }  
+523:    
+524:      public override MembershipUser GetUser(object providerUserKey, bool userIsOnline)  
+525:      {  
+526:        throw new NotImplementedException();  
+527:      }  
+528:    
+529:      public override string GetUserNameByEmail(string email)  
+530:      {  
+531:        throw new NotImplementedException();  
+532:      }  
+533:    
+534:      public override string ResetPassword(string username, string answer)  
+535:      {  
+536:        throw new NotImplementedException();  
+537:      }  
+538:    
+539:      public override bool UnlockUser(string userName)  
+540:      {  
+541:        throw new NotImplementedException();  
+542:      }  
+543:    
+544:      public override void UpdateUser(MembershipUser user)  
+545:      {  
+546:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+547:        {  
+548:          try  
+549:          {  
+550:            User userToEdit = (from u in _db.Users  
+551:                      where u.UserName == user.UserName &amp;&amp; u.DeletedOn == null  
+552:                      select u).FirstOrDefault();  
+553:    
+554:            if (userToEdit != null)  
+555:            {  
+556:    
+557:              // submit changes  
+558:              //_db.SubmitChanges();  
+559:            }  
+560:          }  
+561:          catch  
+562:          {  
+563:          }  
+564:        }  
+565:      }  
+566:    
+567:      public void UpdateCustomUser(CustomMembershipUser user)  
+568:      {  
+569:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+570:        {  
+571:          try  
+572:          {  
+573:            User userToEdit = (from u in _db.Users  
+574:                      where u.UserName == user.UserName &amp;&amp; u.DeletedOn == null  
+575:                      select u).FirstOrDefault();  
+576:    
+577:            if (userToEdit != null)  
+578:            {  
+579:              userToEdit.Name = user.Name;  
+580:              userToEdit.Email = user.Email;  
+581:              userToEdit.CompanyFK = user.CompanyFK;  
+582:    
+583:    
+584:              // submit changes  
+585:              _db.SubmitChanges();  
+586:            }  
+587:          }  
+588:          catch  
+589:          {  
+590:          }  
+591:        }  
+592:      }  
+593:    
+594:      public override bool ValidateUser(string username, string password)  
+595:      {  
+596:        bool isValid = false;  
+597:    
+598:        using (CustomDataDataContext _db = new CustomDataDataContext())  
+599:        {  
+600:          try  
+601:          {  
+602:            User user = (from u in _db.Users  
+603:                   where u.UserName == username &amp;&amp; u.DeletedOn == null  
+604:                   select u).FirstOrDefault();  
+605:    
+606:            if (user != null)  
+607:            {  
+608:              string storedPassword = user.Password;  
+609:              if (CheckPassword(password, storedPassword))  
+610:              {  
+611:                isValid = true;  
+612:              }  
+613:            }  
+614:          }  
+615:          catch  
+616:          {  
+617:            isValid = false;  
+618:          }  
+619:        }  
+620:        return isValid;  
+621:      }  
+622:      #endregion  
+623:    
+624:      #region Utility Methods  
+625:    
+626:      private bool CheckPassword(string password, string dbpassword)  
+627:      {  
+628:        string pass1 = password;  
+629:        string pass2 = dbpassword;  
+630:    
+631:        switch (PasswordFormat)  
+632:        {  
+633:          case MembershipPasswordFormat.Encrypted:  
+634:            pass2 = UnEncodePassword(dbpassword);  
+635:            break;  
+636:          case MembershipPasswordFormat.Hashed:  
+637:            pass1 = EncodePassword(password);  
+638:            break;  
+639:          default:  
+640:            break;  
+641:        }  
+642:    
+643:        if (pass1 == pass2)  
+644:        {  
+645:          return true;  
+646:        }  
+647:    
+648:        return false;  
+649:      }  
+650:    
+651:      private string UnEncodePassword(string encodedPassword)  
+652:      {  
+653:        string password = encodedPassword;  
+654:    
+655:        switch (PasswordFormat)  
+656:        {  
+657:          case MembershipPasswordFormat.Clear:  
+658:            break;  
+659:          case MembershipPasswordFormat.Encrypted:  
+660:            password =  
+661:             Encoding.Unicode.GetString(DecryptPassword(Convert.FromBase64String(password)));  
+662:            break;  
+663:          case MembershipPasswordFormat.Hashed:  
+664:            //HMACSHA1 hash = new HMACSHA1();  
+665:            //hash.Key = HexToByte(machineKey.ValidationKey);  
+666:            //password = Convert.ToBase64String(hash.ComputeHash(Encoding.Unicode.GetBytes(password)));  
+667:    
+668:            throw new ProviderException("Not implemented password format (HMACSHA1).");  
+669:          default:  
+670:            throw new ProviderException("Unsupported password format.");  
+671:        }  
+672:    
+673:        return password;  
+674:      }  
+675:    
+676:      private string GetConfigValue(string configValue, string defaultValue)  
+677:      {  
+678:        if (String.IsNullOrEmpty(configValue))  
+679:        {  
+680:          return defaultValue;  
+681:        }  
+682:    
+683:        return configValue;  
+684:      }  
+685:    
+686:      private string EncodePassword(string password)  
+687:      {  
+688:        string encodedPassword = password;  
+689:    
+690:        switch (PasswordFormat)  
+691:        {  
+692:          case MembershipPasswordFormat.Clear:  
+693:            break;  
+694:          case MembershipPasswordFormat.Encrypted:  
+695:            byte[] encryptedPass = EncryptPassword(Encoding.Unicode.GetBytes(password));  
+696:            encodedPassword = Convert.ToBase64String(encryptedPass);  
+697:            break;  
+698:          case MembershipPasswordFormat.Hashed:  
+699:            HMACSHA1 hash = new HMACSHA1();  
+700:            hash.Key = HexToByte(machineKey.ValidationKey);  
+701:            encodedPassword =  
+702:             Convert.ToBase64String(hash.ComputeHash(Encoding.Unicode.GetBytes(password)));  
+703:            break;  
+704:          default:  
+705:            throw new ProviderException("Unsupported password format.");  
+706:        }  
+707:    
+708:        return encodedPassword;  
+709:      }  
+710:    
+711:      private byte[] HexToByte(string hexString)  
+712:      {  
+713:        byte[] returnBytes = new byte[hexString.Length / 2];  
+714:        for (int i = 0; i &lt; returnBytes.Length; i++)  
+715:          returnBytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);  
+716:        return returnBytes;  
+717:      }  
+718:    
+719:      #endregion  
+720:    }  
+</pre>
+<p><!-- /wp:syntaxhighlighter/code --></p>
+<p><!-- wp:paragraph --></p>
+<p>Of course, not all the class members are implemented, but&nbsp;for illustration I think the example is long enough so that you can get the&nbsp;point.<br />There are some methods&nbsp;here like:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p><span style="color:blue;font-family:Consolas;font-size:9.5pt;">public</span><span style="font-family:Consolas;font-size:9.5pt;"> CustomMembershipUser GetUser(<span style="color:blue;">string</span> username)</span></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>I deliberately put that there so that I can illustrate that you could return a custom membership user. We will discuss this in one of the next parts of these series.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>In order for this to work you need to tell the web&nbsp;application that we are going to use a custom membership provider. So, add the&nbsp;following line to<span style="font-family:'Courier New';line-height:115%;"> web.config</span>:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p><span style="color:blue;font-family:Consolas;font-size:9.5pt;">&lt;</span><span style="color:#a31515;font-family:Consolas;font-size:9.5pt;">membership</span> <span style="color:red;font-family:Consolas;font-size:9.5pt;">defaultProvider</span><span style="color:blue;font-family:Consolas;font-size:9.5pt;">=</span><span style="font-family:Consolas;font-size:9.5pt;">"<span style="color:blue;">CustomMembershipProvider</span>"<span style="color:blue;">&gt;</span></span><br /><span style="color:blue;font-family:Consolas;font-size:9.5pt;"> &lt;</span><span style="color:#a31515;font-family:Consolas;font-size:9.5pt;">providers</span><span style="color:blue;font-family:Consolas;font-size:9.5pt;">&gt;</span><br /><span style="color:blue;font-family:Consolas;font-size:9.5pt;"> &lt;</span><span style="color:#a31515;font-family:Consolas;font-size:9.5pt;">clear</span><span style="color:blue;font-family:Consolas;font-size:9.5pt;"> /&gt;</span><br /><span style="color:blue;font-family:Consolas;font-size:9.5pt;"><br />&lt;</span><span style="color:#a31515;font-family:Consolas;font-size:9.5pt;">add</span> <span style="color:red;font-family:Consolas;font-size:9.5pt;">name</span><span style="color:blue;font-family:Consolas;font-size:9.5pt;">=</span><span style="font-family:Consolas;font-size:9.5pt;">"<span style="color:blue;">CustomMembershipProvider</span>" <span style="color:red;">type</span><span style="color:blue;">=</span>"<span style="color:blue;">Custom.Membership.CustomMembershipProvider</span>" <span style="color:red;">connectionStringName</span><span style="color:blue;">=</span>"<span style="color:blue;">CustomConnectionString</span>" <span style="color:red;">enablePasswordRetrieval</span><span style="color:blue;">=</span>"<span style="color:blue;">false</span>" <span style="color:red;">enablePasswordReset</span><span style="color:blue;">=</span>"<span style="color:blue;">true</span>" <span style="color:red;">requiresQuestionAndAnswer</span><span style="color:blue;">=</span>"<span style="color:blue;">false</span>" <span style="color:red;">requiresUniqueEmail</span><span style="color:blue;">=</span>"<span style="color:blue;">false</span>" <span style="color:red;">maxInvalidPasswordAttempts</span><span style="color:blue;">=</span>"<span style="color:blue;">5</span>" <span style="color:red;">minRequiredPasswordLength</span><span style="color:blue;">=</span>"<span style="color:blue;">6</span>" <span style="color:red;">minRequiredNonalphanumericCharacters</span><span style="color:blue;">=</span>"<span style="color:blue;">0</span>" <span style="color:red;">passwordAttemptWindow</span><span style="color:blue;">=</span>"<span style="color:blue;">10</span>" <span style="color:red;">applicationName</span><span style="color:blue;">=</span>"<span style="color:blue;">/</span>" <span style="color:red;">passwordFormat</span><span style="color:blue;">=</span>"<span style="color:blue;">Encrypted</span>"<span style="color:blue;"> /&gt;</span></span><br /><span style="color:blue;font-family:Consolas;font-size:9.5pt;"><br />&lt;/</span><span style="color:#a31515;font-family:Consolas;font-size:9.5pt;">providers</span><span style="color:blue;font-family:Consolas;font-size:9.5pt;">&gt;</span><br /><span style="color:blue;font-family:Consolas;font-size:9.5pt;"> &lt;/</span><span style="color:#a31515;font-family:Consolas;font-size:9.5pt;">membership</span><span style="color:blue;font-family:Consolas;font-size:9.5pt;">&gt;</span></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>This way you are telling the application which provider to&nbsp;use and initialize its members with default values.<br />Now, to the other most important part of this - the usage.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>The default usage is pretty straightforward i.e. you just call any of the&nbsp;methods trough the Membership custom class:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p><span style="font-family:'Courier New';font-size:10pt;">if(</span><span style="color:#2b91af;font-family:Consolas;font-size:9.5pt;">Membership</span><span style="font-family:'Courier New';font-size:10pt;">.ValidateUser(userName.Text,&nbsp;password.Text))</span><br /><span style="font-family:'Courier New';font-size:10pt;">{</span><br /><span style="font-family:'Courier New';font-size:10pt;">&nbsp;&nbsp; </span><span style="color:green;font-family:Consolas;font-size:9.5pt;">// do something</span><br /><span style="font-family:'Courier New';font-size:10pt;">}</span></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>You might have added extra methods to your custom membership&nbsp;class, like <span style="font-family:Consolas;line-height:115%;">IsUserActive(string<br />username)</span> in that case you can get your custom provider trough the&nbsp;Provider or Providers properties of Membership and call the method:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p><span style="color:#2b91af;font-family:Consolas;font-size:9.5pt;">CustomMembershipProvider</span><span style="font-family:Consolas;font-size:9.5pt;"> customMemebership = (<span style="color:#2b91af;">CustomMembershipProvider</span>)System.Web.Security.<span style="color:#2b91af;">Membership</span>.Providers[<span style="color:#a31515;">"CustomMembershipProvider"</span>];</span><br /><span style="color:blue;font-family:Consolas;font-size:9.5pt;">bool</span><span style="font-family:Consolas;font-size:9.5pt;"> active = customMembership.IsUserActive(username);</span></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>That's that. You have your custom membership provider. This is far from over as far as the example is concerned. We will continue our discussion in the next part of our series.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Happy coding.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>//Bojan</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Other chapters from these series:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:list --></p>
+<ul>
+<li><a title="Custom Role Provider" href="http://thebojan.ninja/2015/03/12/custom-role-provider/">Custom Role Provider</a></li>
+<li><a title="Custom Membership User" href="http://thebojan.ninja/2015/03/12/custom-membership-user/">Custom Membership User</a></li>
+</ul>
+<p><!-- /wp:list --></p>

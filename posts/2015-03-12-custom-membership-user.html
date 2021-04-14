@@ -1,0 +1,212 @@
+---
+layout: post
+title: Custom Membership User
+date: 2015-03-12 15:50:45.000000000 +01:00
+type: post
+parent_id: '0'
+published: true
+password: ''
+status: publish
+categories:
+- ASP.NET
+- C#
+- MEMBERSHIP
+- WEB
+tags:
+- ".NET"
+meta:
+  _wpas_skip_10664490: '1'
+  _rest_api_published: '1'
+  _rest_api_client_id: "-1"
+  _import_session_id: 5f57b340a397b
+  _import_original_post_id: '28'
+  original_post_id: '1655'
+  _wp_old_slug: '1655'
+author:
+  login: bojanskr
+  email: bojanskr@gmail.com
+  display_name: TehBoyan
+  first_name: Bojan
+  last_name: Skrchevski
+permalink: "/2015/03/12/custom-membership-user/"
+---
+<p><!-- wp:paragraph --></p>
+<p>Hello again.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>In the first part of these mini series we&nbsp;discussed how you can create a&nbsp;<a title="Custom Membership Provider" href="http://thebojan.ninja/2015/03/12/custom-membership-provider/">custom membership provider</a> and a&nbsp;<a title="Custom Role Provider" href="http://thebojan.ninja/2015/03/12/custom-role-provider/">custom&nbsp;role provider.</a><br />Many times you will find yourself in a situation where&nbsp;you need to store and retrieve more data for a specific user than it is&nbsp;available in the&nbsp; <span class="auto-style2">MembershipUser</span> class,&nbsp;which is the default for a <span class="auto-style2">MembershipProvider</span>.<br />While there is a way to acomplish this by using profiles and the&nbsp;<span class="auto-style2"><a href="http://msdn.microsoft.com/en-us/library/system.web.profile.profileprovider.aspx">ProfileProvider</a></span> class here I will show you how to accomplish this by&nbsp;creating a custom membership user.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:more --><br />
+<!--more--><br />
+<!-- /wp:more --></p>
+<p><!-- wp:paragraph --></p>
+<p>In the example that I'm going to provide, as in the&nbsp;previous examples I use&nbsp;Linq-to-SQL data source and my own table structure to keep membership/user and&nbsp;role data.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>In order to create a custom membership user you need to&nbsp;inherit from <span class="auto-style2">MembershipUser c</span>lass.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Here's an&nbsp;example:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:syntaxhighlighter/code --></p>
+<pre class="wp-block-syntaxhighlighter-code">1:  namespace Custom.CustomUser  
+2:  {  
+3:    using System;  
+4:    using System.Web.Security;  
+5:    
+6:    public class CustomMembershipUser : MembershipUser  
+7:    {  
+8:      public int CompanyFK { get; set; }  
+9:    
+10:      public string Name { get; set; }  
+11:    
+12:      public CustomMembershipUser(  
+13:        string providername,  
+14:        string username,  
+15:        object providerUserKey,  
+16:        string email,  
+17:        string passwordQuestion,  
+18:        string comment,  
+19:        bool isApproved,  
+20:        bool isLockedOut,  
+21:        DateTime creationDate,  
+22:        DateTime lastLoginDate,  
+23:        DateTime lastActivityDate,  
+24:        DateTime lastPasswordChangedDate,  
+25:        DateTime lastLockedOutDate,  
+26:        int companyFK,  
+27:        string name) :  
+28:        base(providername,  
+29:          username,  
+30:          providerUserKey,  
+31:          email,  
+32:          passwordQuestion,  
+33:          comment,  
+34:          isApproved,  
+35:          isLockedOut,  
+36:          creationDate,  
+37:          lastLoginDate,  
+38:          lastPasswordChangedDate,  
+39:          lastActivityDate,  
+40:          lastLockedOutDate)  
+41:      {  
+42:        CompanyFK = companyFK;  
+43:        Name = name;  
+44:      }  
+45:    }  
+46:  }  
+</pre>
+<p><!-- /wp:syntaxhighlighter/code --></p>
+<p><!-- wp:paragraph --></p>
+<p>After you create the new class you need to use it in your&nbsp;CustomMembershipProvider as we did in our example in&nbsp;<a title="Custom Membership Provider" href="http://thebojan.ninja/2015/03/12/custom-membership-provider/">our previous post:</a></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:syntaxhighlighter/code --></p>
+<pre class="wp-block-syntaxhighlighter-code">1:  public CustomMembershipUser CreateUser(  
+2:          string username,  
+3:          string password,  
+4:          string email,  
+5:          string passwordQuestion,  
+6:          string passwordAnswer,  
+7:          bool isApproved,  
+8:          object providerUserKey,  
+9:          out MembershipCreateStatus status,  
+10:          int companyID,  
+11:          string name,  
+12:          string phoneNumber)  
+13:      {  
+14:        ValidatePasswordEventArgs args = new ValidatePasswordEventArgs(username, password, true);  
+15:    
+16:        OnValidatingPassword(args);  
+17:    
+18:        if (args.Cancel)  
+19:        {  
+20:          status = MembershipCreateStatus.InvalidPassword;  
+21:          return null;  
+22:        }  
+23:    
+24:        if ((RequiresUniqueEmail &amp;&amp; (GetUserNameByEmail(email) != String.Empty)))  
+25:        {  
+26:          status = MembershipCreateStatus.DuplicateEmail;  
+27:          return null;  
+28:        }  
+29:    
+30:        CustomMembershipUser customMembershipUser = GetUser(username);  
+31:    
+32:        if (customMembershipUser == null)  
+33:        {  
+34:          try  
+35:          {  
+36:            using (CustomDataContext _db = new CustomDataContext())  
+37:            {  
+38:              User user = new User();  
+39:              user.CompanyFK = companyID;  
+40:              user.Name = name;  
+41:              user.UserName = username;  
+42:              user.Password = EncodePassword(password);  
+43:              user.Email = email.ToLower();  
+44:              user.CreatedOn = DateTime.Now;  
+45:              user.ModifiedOn = DateTime.Now;  
+46:              user.Phone = phoneNumber;  
+47:              _db.Users.InsertOnSubmit(user);  
+48:    
+49:              _db.SubmitChanges();  
+50:    
+51:              status = MembershipCreateStatus.Success;  
+52:    
+53:              return GetUser(username);  
+54:            }  
+55:    
+56:          }  
+57:          catch  
+58:          {  
+59:            status = MembershipCreateStatus.ProviderError;  
+60:          }  
+61:        }  
+62:        else  
+63:        {  
+64:          status = MembershipCreateStatus.DuplicateUserName;  
+65:        }  
+66:    
+67:        return null;  
+68:      }  
+</pre>
+<p><!-- /wp:syntaxhighlighter/code --></p>
+<p><!-- wp:paragraph --></p>
+<p>You don't have to provide settings in the&nbsp;<span class="auto-style2">web.config</span> to&nbsp;make this work. You just need to use it in your membership provider.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Now, all you have to do in your code in order to create a&nbsp;user with your custom memebrship user class is something like:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:syntaxhighlighter/code --></p>
+<pre class="wp-block-syntaxhighlighter-code">1:  CustomMembershipUser user = membershipProvider.CreateUser("username", "password", "mail@somewhere.com", "", "", true, null, out unusedStatus, c.CompanyId, "contact", "");  
+2:  if (user != null) {  
+3:   // if successfully created add the new user to some role  
+4:   membershipProvider.AddUsersToRoles(new string[] { user.UserName }, new string[] { "Role" });  
+5:  }  
+</pre>
+<p><!-- /wp:syntaxhighlighter/code --></p>
+<p><!-- wp:paragraph --></p>
+<p>If you want to get the user you need to get it from the&nbsp;<span class="auto-style2">Membership </span>class as in this example:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:syntaxhighlighter/code --></p>
+<pre class="wp-block-syntaxhighlighter-code">1:  CustomMembershipUser user = Membership.GetUser(username) as CustomMembershipUser;  
+</pre>
+<p><!-- /wp:syntaxhighlighter/code --></p>
+<p><!-- wp:paragraph --></p>
+<p>That's it. Now you have a <a title="Custom Membership Provider" href="http://thebojan.ninja/2015/03/12/custom-membership-provider/" target="_blank" rel="noopener">custom membership provider</a>, a&nbsp;<a title="Custom Role Provider" href="http://thebojan.ninja/2015/03/12/custom-role-provider/" target="_blank" rel="noopener">custom role provider</a> and a custom user to carry and store extra user&nbsp;information in the storage that you provided while creating your custom&nbsp;membership and role providers.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Until next time...Happy coding.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Other chapters from these series</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:list --></p>
+<ul>
+<li><a title="Custom Membership Provider" href="http://thebojan.ninja/2015/03/12/custom-membership-provider/">Custom Membership Provider</a></li>
+<li><a title="Custom Role Provider" href="http://thebojan.ninja/2015/03/12/custom-role-provider/">Custom Role Provider</a></li>
+</ul>
+<p><!-- /wp:list --></p>
+<p><!-- wp:paragraph --></p>
+<p>//</p>
+<p><!-- /wp:paragraph --></p>

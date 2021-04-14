@@ -1,0 +1,43 @@
+---
+layout: post
+title: 'Sql Server: Get all tables containing column with a specified name'
+date: 2015-03-13 09:48:19.000000000 +01:00
+type: post
+parent_id: '0'
+published: true
+password: ''
+status: publish
+categories:
+- BESTPRACTICES
+- SQL
+- SQLSERVER
+tags: []
+meta:
+  _wpas_skip_google_plus: '1'
+  _wpas_skip_twitter: '1'
+  _wpas_skip_linkedin: '1'
+  _wpas_skip_facebook: '1'
+  _wpas_skip_tumblr: '1'
+  _wpas_skip_path: '1'
+  _publicize_pending: '1'
+  _rest_api_published: '1'
+  _rest_api_client_id: "-1"
+  _import_session_id: 5f57b340a397b
+  _import_original_post_id: '84'
+  original_post_id: '1655'
+  _wp_old_slug: '1655'
+author:
+  login: bojanskr
+  email: bojanskr@gmail.com
+  display_name: TehBoyan
+  first_name: Bojan
+  last_name: Skrchevski
+permalink: "/2015/03/13/sql-server-get-all-tables-containing-column-with-a-specified-name/"
+---
+<p>A little helper query I came accross, very useful if you want to find all the tables that contain a specific column:</p>
+<pre class="lang-sql prettyprint prettyprinted" style="background-color:#eeeeee;border:0;font-family:Consolas, Menlo, Monaco, 'Lucida Console', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace, serif;font-size:14px;line-height:18px;margin-bottom:10px;max-height:600px;overflow:auto;padding:5px;vertical-align:baseline;width:auto;"><code style="border:0;font-family:Consolas, Menlo, Monaco, 'Lucida Console', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace, serif;margin:0;padding:0;vertical-align:baseline;"><span class="kwd" style="background-color:transparent;border:0;color:darkblue;margin:0;padding:0;vertical-align:baseline;">SELECT</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;"> c</span><span class="pun" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">.</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">name </span><span class="kwd" style="background-color:transparent;border:0;color:darkblue;margin:0;padding:0;vertical-align:baseline;">AS</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;"> ColName</span><span class="pun" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">,</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;"> t</span><span class="pun" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">.</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">name </span><span class="kwd" style="background-color:transparent;border:0;color:darkblue;margin:0;padding:0;vertical-align:baseline;">AS</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;"> TableName
+</span><span class="kwd" style="background-color:transparent;border:0;color:darkblue;margin:0;padding:0;vertical-align:baseline;">FROM</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;"> sys</span><span class="pun" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">.</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">columns c
+    </span><span class="kwd" style="background-color:transparent;border:1px;color:darkblue;margin:0;padding:0;vertical-align:baseline;">JOIN</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;"> sys</span><span class="pun" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">.</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">tables t </span><span class="kwd" style="background-color:transparent;border:0;color:darkblue;margin:0;padding:0;vertical-align:baseline;">ON</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;"> c</span><span class="pun" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">.</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">object_id </span><span class="pun" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">=</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;"> t</span><span class="pun" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">.</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">object_id
+</span><span class="kwd" style="background-color:transparent;border:0;color:darkblue;margin:0;padding:0;vertical-align:baseline;">WHERE</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;"> c</span><span class="pun" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">.</span><span class="pln" style="background-color:transparent;border:0;margin:0;padding:0;vertical-align:baseline;">name </span><span class="kwd" style="background-color:transparent;border:0;color:darkblue;margin:0;padding:0;vertical-align:baseline;">LIKE</span> <span class="str" style="background-color:transparent;border:0;color:maroon;margin:0;padding:0;vertical-align:baseline;">'%ColumnName%'</span></code></pre>
+<p>&nbsp;</p>
+<p>What it basically does is that it will do a join on <em><span style="color:#808080;">sys.columns</span></em> and <em><span style="color:#808080;">sys.tables</span></em> to get all tables that contains that particular column in your Sql Server instance.</p>

@@ -1,0 +1,60 @@
+---
+layout: post
+title: The S.O.L.I.D. Principles
+date: 2015-03-12 19:53:25.000000000 +01:00
+type: post
+parent_id: '0'
+published: true
+password: ''
+status: publish
+categories:
+- BESTPRACTICES
+- DESIGN
+- PRINCIPLES
+- SOFTWARE
+tags: []
+meta:
+  _rest_api_published: '1'
+  _rest_api_client_id: "-1"
+  _wpas_skip_10664490: '1'
+  _import_session_id: 5f57b340a397b
+  _import_original_post_id: '71'
+  original_post_id: '1655'
+  _wp_old_slug: '1655'
+author:
+  login: bojanskr
+  email: bojanskr@gmail.com
+  display_name: TehBoyan
+  first_name: Bojan
+  last_name: Skrchevski
+permalink: "/2015/03/12/the-s-o-l-i-d-design-principles/"
+---
+<p>There have been many questions I encountered lately of what are the best&nbsp;practices / guidances that you can take up on when designing an application.</p>
+<p>Wheather that's an ASP.NET application or any other type of application that uses object oriented principles.</p>
+<p>First and upmost, let me begin with probably one of the most important principles in object-oriented development and design, and that is the Separation of Concerns(SoC) principle.</p>
+<h5><strong>Separation of Concerns (SoC)</strong></h5>
+<p>SoC is the process of dissecting a piece of software into distinct features that<br />
+encapsulate unique behavior&nbsp;and data that can be used by other classes. Generally, a concern represents a&nbsp;feature or behavior of a class. The act of separating a program into discrete responsibilities&nbsp;significantly increases code reuse,&nbsp;maintenance, and testability. Like, for example MVC can separate content from presentation and data-processing (model) from content.</p>
+<p>Of course, every programming language has it's own ways to incorporate this&nbsp;principle in it's own ways.</p>
+<h4>The S.O.L.I.D. Design Principles</h4>
+<p><strong>S.O.L.I.D.</strong> (stands for <b>Single responsibility, Open-closed, Liskov substitution principle, Interface segregation and Dependency inversion</b>).</p>
+<p>The <strong>S.O.L.I.D.</strong> design principles are a collection of best practices for&nbsp;object-oriented design. All&nbsp;of the generally known Gang of Four design patterns adhere to these principles in one form or&nbsp;another. The term&nbsp;<strong>S.O.L.I.D. </strong>comes from the initial letter of each of the five principles that&nbsp;were first collected in the book&nbsp;<em>Agile Principles, Patterns, and Practices in C#</em> by Robert C. Martin. Commonly known to us as "Uncle Bob"</p>
+<p>The following sections describes each one of them.</p>
+<p><!--more--></p>
+<h5>Single Responsibility Principle (SRP)</h5>
+<p>The principle of SRP is closely aligned with SoC(Separation of Concerns)&nbsp;principle which we discuss above. It states that every object&nbsp;should only have one&nbsp;reason to change and a single focus of responsibility. By adhering to this&nbsp;principle, you avoid the&nbsp;problem of monolithic class design that is the software equivalent of a Swiss&nbsp;army knife, meaning putting everything in a few or one class that does all the&nbsp;work for you. By having&nbsp;concise objects, you again increase the readability and maintenance of a system.</p>
+<h5>Open-Closed Principle (OCP)</h5>
+<p>The OCP states that classes should be <em>open for extension and closed for<br />
+modification</em>, in that you&nbsp;should be able to add new features and extend a class without changing its&nbsp;internal behavior. The&nbsp;principle strives to avoid breaking the existing class and other classes that&nbsp;depend on it, which&nbsp;would create a ripple effect of bugs and errors throughout your application.</p>
+<h5>Liskov Substitution Principle (LSP)</h5>
+<p>The LSP dictates that you should be able to use any derived class in place of a&nbsp;parent class and have it&nbsp;behave in the same manner without modification. This principle is in line with&nbsp;OCP in that it ensures&nbsp;that a derived class does not affect the behavior of a parent class, or, put&nbsp;another way, derived classes&nbsp;must be substitutable for their base classes.</p>
+<h5>Interface Segregation Principle (ISP)</h5>
+<p>The ISP is all about splitting the methods of a contract into groups of&nbsp;responsibility and assigning&nbsp;interfaces to these groups to prevent a client from needing to implement one<br />
+large interface and a&nbsp;host of methods that they do not use. The purpose behind this is so that classes wanting to use the&nbsp;same interfaces only need to implement a specific set of methods as opposed to a&nbsp;monolithic interface&nbsp;of methods. In other words the notion that <em>“many client specific&nbsp;interfaces are better than one general purpose interface.”</em></p>
+<h5>Dependency Inversion Principle (DIP)</h5>
+<p>The DIP is all about isolating your classes from concrete implementations and&nbsp;having them depend on&nbsp;abstract classes or interfaces. It promotes the mantra of coding to an interface<br />
+rather than an implementation,&nbsp;which increases flexibility within a system by ensuring you are not tightly&nbsp;coupled to one&nbsp;implementation. This is heavily used in the new ASP.NET MVC pattern as&nbsp;Dependency Injection(DI) and Inversion of Control(IoC), where you would normally use the Repository pattern&nbsp;with it to "hide" the underlying data access and inject or fake different implementations when needed, but we'll get to that in&nbsp;much more details in another&nbsp;post.</p>
+<p>So, there it is, sort of a short overview of <strong>S.O.L.I.D.&nbsp;</strong>design principles. Of course, there's much more to object-oriented design.&nbsp;Hopefully we'll get into much more details in future posts.</p>
+<p>You can find out much more if you take a look at Uncle Bob's videos, and read his book Agile Priciples Patterns and Practices.</p>
+<p>'Till next time.....Taaaa daaaa....</p>
+<p>//Bojan</p>

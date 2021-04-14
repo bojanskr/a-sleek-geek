@@ -1,0 +1,59 @@
+---
+layout: post
+title: Get all stored procedures related to a table
+date: 2015-03-13 10:25:50.000000000 +01:00
+type: post
+parent_id: '0'
+published: true
+password: ''
+status: publish
+categories:
+- BESTPRACTICES
+- SQL
+- SQLSERVER
+tags: []
+meta:
+  _rest_api_published: '1'
+  _rest_api_client_id: "-1"
+  _wpas_skip_facebook: '1'
+  _wpas_skip_google_plus: '1'
+  _wpas_skip_twitter: '1'
+  _wpas_skip_linkedin: '1'
+  _wpas_skip_tumblr: '1'
+  _wpas_skip_path: '1'
+  _publicize_job_id: '48192205762'
+  _import_session_id: 5f57b340a397b
+  _import_original_post_id: '97'
+  original_post_id: '1405'
+  _wp_old_slug: '1405'
+author:
+  login: bojanskr
+  email: bojanskr@gmail.com
+  display_name: TehBoyan
+  first_name: Bojan
+  last_name: Skrchevski
+permalink: "/2015/03/13/get-all-stored-procedures-related-to-a-table/"
+---
+<p><!-- wp:paragraph --></p>
+<p>To get all stored procedures related to a table:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Option 1:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:syntaxhighlighter/code --></p>
+<pre class="wp-block-syntaxhighlighter-code"> SELECT DISTINCT so.name  
+ FROM syscomments sc  
+ INNER JOIN sysobjects so ON sc.id=so.id  
+ WHERE sc.TEXT LIKE '%tablename%'  
+</pre>
+<p><!-- /wp:syntaxhighlighter/code --></p>
+<p><!-- wp:paragraph --></p>
+<p>Option2:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:syntaxhighlighter/code --></p>
+<pre class="wp-block-syntaxhighlighter-code"> SELECT DISTINCT o.name, o.xtype  
+ FROM syscomments c  
+ INNER JOIN sysobjects o ON c.id=o.id  
+ WHERE c.TEXT LIKE '%tablename%'  
+</pre>
+<p><!-- /wp:syntaxhighlighter/code --></p>

@@ -1,0 +1,48 @@
+---
+layout: post
+title: Filtering duplicates out of an IEnumerable
+date: 2015-03-13 09:53:49.000000000 +01:00
+type: post
+parent_id: '0'
+published: true
+password: ''
+status: publish
+categories:
+- C#
+- LINQ
+tags:
+- ".NET"
+meta:
+  _wpas_skip_google_plus: '1'
+  _wpas_skip_facebook: '1'
+  _wpas_skip_twitter: '1'
+  _wpas_skip_linkedin: '1'
+  _wpas_skip_tumblr: '1'
+  _wpas_skip_path: '1'
+  _rest_api_published: '1'
+  _rest_api_client_id: "-1"
+  _publicize_job_id: '48192243926'
+  _import_session_id: 5f57b340a397b
+  _import_original_post_id: '89'
+  original_post_id: '1655'
+  _wp_old_slug: '1655'
+author:
+  login: bojanskr
+  email: bojanskr@gmail.com
+  display_name: TehBoyan
+  first_name: Bojan
+  last_name: Skrchevski
+permalink: "/2015/03/13/c-linq-filtering-duplicates-out-of-an-ienumerable/"
+---
+<p><!-- wp:heading {"level":6} --></p>
+<h6>Problem: Filtering out(removing duplicates) from an IEnumerable</h6>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:paragraph --></p>
+<p>One possible solution with using linq would be to group by key and take the first element of each group. Here's an example:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:syntaxhighlighter/code {"className":"lang-cs prettyprint prettyprinted"} --></p>
+<pre class="wp-block-syntaxhighlighter-code lang-cs prettyprint prettyprinted">enumerable.GroupBy(x =&gt; x.key).Select(g =&gt; g.First())</pre>
+<p><!-- /wp:syntaxhighlighter/code --></p>
+<p><!-- wp:html --></p>
+<div>&nbsp;</div>
+<p><!-- /wp:html --></p>

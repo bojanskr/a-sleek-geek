@@ -1,0 +1,155 @@
+---
+layout: post
+title: Save yourself some time
+date: 2021-02-15 03:03:33.000000000 +01:00
+type: post
+parent_id: '0'
+published: true
+password: ''
+status: publish
+categories:
+- BACKEND
+- DEVELOPMENT
+- PERSONAL-DEVELOPMENT
+- PRINCIPLES
+- PYTHON
+- REST
+- SERVICES
+- SOFTWARE
+- WEB
+tags:
+- API
+- DOCKER
+- PROGRAMMING
+meta:
+  _publicize_done_external: a:2:{s:7:"twitter";a:1:{i:23158388;s:55:"https://twitter.com/bojanskr/status/1361134041446154242";}s:8:"facebook";a:1:{i:24824976;s:52:"https://facebook.com/109859327422450_247649963643385";}}
+  spay_email: ''
+  amp_status: ''
+  _coblocks_accordion_ie_support: ''
+  publicize_linkedin_url: ''
+  _publicize_done_23562366: '1'
+  _wpas_done_25960354: '1'
+  _publicize_done_22258584: '1'
+  _oembed_c8881f529a5eab322e09233a3c52257a: "{{unknown}}"
+  _oembed_038013ffd8975d2a3f65db85216c70da: "{{unknown}}"
+  _last_editor_used_jetpack: block-editor
+  _wpas_done_24824976: '1'
+  _publicize_done_23096508: '1'
+  publicize_twitter_user: bojanskr
+  _wpas_done_23158388: '1'
+  _oembed_6769f257df0f4cd5c859028bdba2d98b: "{{unknown}}"
+  _coblocks_responsive_height: ''
+  _coblocks_dimensions: ''
+  _coblocks_attr: ''
+  _thumbnail_id: '1064'
+  _publicize_job_id: '54782912522'
+  timeline_notification: '1613354617'
+  _oembed_74343a1d29111f602c32e114345d29e7: "{{unknown}}"
+  _wpas_is_tweetstorm: ''
+  _oembed_f075efd5343e4b1865933ea3a0494f63: "{{unknown}}"
+  _oembed_0fbcb925148850734dab37cf870f06ef: "{{unknown}}"
+  _oembed_80ef925b1f0442be34e054ab03337cf5: "{{unknown}}"
+  _oembed_eb3e2095ae6efa11a21578a40a297bbb: "{{unknown}}"
+  _oembed_cc3122b225a0c1a9083554f4dab0a537: "{{unknown}}"
+  _oembed_2a49c23bdce9e0a9e7ac4493c9cf638b: "{{unknown}}"
+author:
+  login: bojanskr
+  email: bojanskr@gmail.com
+  display_name: TehBoyan
+  first_name: Bojan
+  last_name: Skrchevski
+permalink: "/2021/02/15/python-flask-docker/"
+excerpt: Save yourselves some trouble and use this checklist when troubleshooting
+  Python Flask service in Docker
+---
+<p><!-- wp:heading {"textAlign":"center","level":4} --></p>
+<h4 class="has-text-align-center"><strong><kbd>[Python Flask service in Docker]</kbd></strong></h4>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:heading {"level":4,"style":{"typography":{"fontSize":"15px"}}} --></p>
+<h4 style="font-size:15px;"><span class="has-inline-color has-pale-cyan-blue-color"><kbd>Fix “exec user process caused „no such file or directory“” in Docker</kbd></span></h4>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:heading {"textAlign":"left","level":4,"fontSize":"normal"} --></p>
+<h4 class="has-text-align-left has-normal-font-size"><span class="has-inline-color has-pale-cyan-blue-color"><kbd>…and a few other tiny things such as "standard_init_linux.go:219: exec user process caused: exec format error"</kbd></span></h4>
+<p><!-- /wp:heading --></p>
+<p><!-- wp:paragraph --></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph {"dropCap":true} --></p>
+<p class="has-drop-cap">So, it was just a casual Sunday evening and in out house that means fiddling around with Python and Docker and.... you get the picture, we're no ordinary family.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph {"align":"justify"} --></p>
+<p class="has-text-align-justify">To put things in context I was doing this Flask "backend service" that was supposed to simulate "n" number of simulations of the <a href="https://en.wikipedia.org/wiki/Monty_Hall_problem" target="_blank" rel="noreferrer noopener">Monty Hall problem</a>, yielding results back to a subscribed frontend in chunks so that we get some sort of progress. Now, me being a good citizen I wanted to put everything in a Docker container and that's why I provided a <kbd>Dockerfile </kbd>with everything you need. I will eventually put the code on GitHub so that everyone benefits from it, but I wanted to use this post to make a reference for myself so that when I scratch my head next time, I at least have this post as a start with troubleshooting.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>I'm one of those people that is a firm believer that the first solution that comes to mind is not the best one. That's why I bother people around me to challenge my ideas so much. But, still there are sometimes these tiny little things that we know are gonna leave us frustrated and we still go and do them regardless. In other words I was sloppy. Further more I kept running that Dockerfile until I had to stop and think what the hell is it that I'm trying to do here. </p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Let's start with the dreaded: <kbd>"standard_init_linux.go:219: exec user process caused: exec format error standard_init_linux.go:219: exec user process caused: exec format error standard_init_linux.go:219: exec user process caused: exec format error"</kbd></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph {"style":{"typography":{"fontSize":"24px","lineHeight":"1"}}} --></p>
+<p style="font-size:24px;line-height:1;"><strong>Lesson 1:</strong></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>First of all if you're gonna put in your docker file, remember that this file is a shell script that will run in your container</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:columns --></p>
+<div class="wp-block-columns"><!-- wp:column {"width":"100%"} --></p>
+<div class="wp-block-column" style="flex-basis:100%;"><!-- wp:preformatted --></p>
+<pre class="wp-block-preformatted">RUN chmod +x ./start.sh<br />CMD ["./start.sh"]</pre>
+<p><!-- /wp:preformatted --></div>
+<p><!-- /wp:column --></div>
+<p><!-- /wp:columns --></p>
+<p><!-- wp:paragraph --></p>
+<p>so go inside start.sh and add that </p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:columns --></p>
+<div class="wp-block-columns"><!-- wp:column {"width":"100%"} --></p>
+<div class="wp-block-column" style="flex-basis:100%;"><!-- wp:preformatted --></p>
+<pre class="wp-block-preformatted">#!/bin/bash</pre>
+<p><!-- /wp:preformatted --></p>
+<p><!-- wp:paragraph --></p>
+<p id="block-69c0f98d-cd1c-4177-96b3-a51f57bc4d2d">or if you use alpine without bash </p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:preformatted --></p>
+<pre id="block-df5915d1-bc16-4216-b17f-39842571ce87" class="wp-block-preformatted">#!/bin/ash</pre>
+<p><!-- /wp:preformatted --></div>
+<p><!-- /wp:column --></div>
+<p><!-- /wp:columns --></p>
+<p><!-- wp:paragraph --></p>
+<p>in my case the file looks like this:</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:columns --></p>
+<div class="wp-block-columns"><!-- wp:column {"width":"100%"} --></p>
+<div class="wp-block-column" style="flex-basis:100%;"><!-- wp:preformatted --></p>
+<pre class="wp-block-preformatted"><strong>#!/usr/bin/env sh<br /></strong><strong><br /></strong>service nginx start<br />uwsgi --ini uwsgi.ini</pre>
+<p><!-- /wp:preformatted --></div>
+<p><!-- /wp:column --></div>
+<p><!-- /wp:columns --></p>
+<p><!-- wp:paragraph {"style":{"typography":{"fontSize":"24px","lineHeight":"1"}}} --></p>
+<p style="font-size:24px;line-height:1;"><strong>Lesson 2:</strong></p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>If you're doing your development in Windows but trying to create a script (regardless how small) that is supposed to run inside a Linux container make sure that</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:quote --></p>
+<blockquote class="wp-block-quote"><p>You don't forget to change the line endings</p>
+<p><cite>TehBoyan from 2021</cite></p></blockquote>
+<p><!-- /wp:quote --></p>
+<p><!-- wp:paragraph --></p>
+<p>So, go to notepad++ and replace all those <code>CRLF</code>s with <code>LF</code>s that Linux expects.</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Also, Git Bash for Windows comes with a tool called dos2unix.exe, so you can use that one if want another alternative</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:columns --></p>
+<div class="wp-block-columns"><!-- wp:column --></p>
+<div class="wp-block-column"><!-- wp:preformatted --></p>
+<pre class="wp-block-preformatted"><kbd>d<code>os2unix.exe start.sh</code></kbd></pre>
+<p><!-- /wp:preformatted --></div>
+<p><!-- /wp:column --></div>
+<p><!-- /wp:columns --></p>
+<p><!-- wp:paragraph --></p>
+<p>Hope this helps some of you out there!</p>
+<p><!-- /wp:paragraph --></p>
+<p><!-- wp:paragraph --></p>
+<p>Happy coding people!</p>
+<p><!-- /wp:paragraph --></p>
