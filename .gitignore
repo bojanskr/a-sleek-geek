@@ -1,2 +1,5 @@
-.github/workflows
-node_modules
+.github/**
+.github/workflows/**
+node_modules/**
+.vs/**
+.vscode/**
