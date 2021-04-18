@@ -1,0 +1,26 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "appliesTo": "src/posts/blog.html",
+      "command": "",
+      "taskLabel": "task-blog",
+      "type": "default"
+    },
+    {
+      "appliesTo": "nodesource_setup.sh",
+      "taskLabel": "task-nodesource_setup",
+      "type": "launch"
+    },
+    {
+      "appliesTo": "assets/js/main.js",
+      "taskLabel": "task-main",
+      "type": "default"
+    },
+    {
+      "taskLabel": "task-main",
+      "appliesTo": "assets/js/main.js",
+      "type": "default"
+    }
+  ]
+}
