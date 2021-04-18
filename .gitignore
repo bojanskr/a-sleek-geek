@@ -1,6 +1,2 @@
 .github/workflows
 node_modules
-.vs
-.vdcode
-.cache
-.github
