@@ -1,0 +1,20 @@
+{
+    "version": "0.2.1",
+    "tasks": [
+        {
+            "appliesTo": ".gitignore",
+            "taskLabel": "task-",
+            "type": "default"
+        },
+        {
+            "taskLabel": "task-nodesource_setup",
+            "appliesTo": "nodesource_setup.sh",
+            "type": "launch"
+        },
+        {
+            "taskLabel": "task-content",
+            "appliesTo": "content.html",
+            "type": "launch"
+        }
+    ]
+}
