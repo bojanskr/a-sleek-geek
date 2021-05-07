@@ -1,14 +1,14 @@
 {
-    "jshint.options": {
-        "browser": true,
-        "esversion": 6,
-        "strict": "global",
-        "use-strict": true,
-        "undef": true,
-        "unused": true,
-        "globals": {
-            "MY_GLOBAL": true
-        },
-        "asi": false
-    }
+  "jshint.options": {
+    "browser": true,
+    "esversion": 6,
+    "strict": "global",
+    "use-strict": true,
+    "undef": true,
+    "unused": true,
+    "globals": {
+      "MY_GLOBAL": true
+    },
+    "asi": false
+  }
 }
