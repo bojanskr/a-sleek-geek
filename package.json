@@ -4,8 +4,8 @@
     "version": "1.0.0",
     "description": "A community, a blog about programming, software development principals, patterns, best practices. Tools that we use. Data and what we do with it. About gaming, reading� EEEHH [INSERT YOUR USUAL NERD CLICHE HERE]",
     "author": "TehBoyan",
-    "homepage": "https://www.thebojan.ninja/",
-    "license": "https://https://github.com/bojanskr/a-sleek-geek/license/",
+    "homepage": "index.html",
+    "license": "MIT",
     "main": "gulpfile.js",
     "repository": {
         "type": "git",
