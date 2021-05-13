@@ -1,0 +1,32 @@
+{% extends "/parts/template.html" %}
+{% set page='index' %}
+
+{% block meta %}
+  <title>>A Sleek Geek</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+{% endblock %}
+
+{% block main %}
+
+  {% include "/sections/hero.html" %}
+
+  <main id="main">
+
+    {% include "/sections/about-section.html" %}
+
+    {% include "/sections/services-section.html" %}
+
+    {% include "/sections/counter-section.html" %}
+
+    {% include "/sections/portfolio-section.html" %}
+
+    {% include "/sections/testimonials-section.html" %}
+
+    {% include "/sections/blog-section.html" %}
+
+    {% include "/sections/contact-section.html" %}
+
+  </main><!-- End #main -->
+
+{% endblock %}

@@ -13,4 +13,3 @@ The content of the blog part is static for the most common parts.
     - Gaming - Gaming section of the website (this was intended to vecome a subset of the blog)
         - There is an integrated Twitch when I stream that shows up here as well
     - Blog posts - depending on relevance and how new they are they might appear further up or down in the blog segment
-
