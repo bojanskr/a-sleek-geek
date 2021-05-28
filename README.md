@@ -1,8 +1,8 @@
 # ASleekGeek website repo
 
-AGeekSleek is a blog in one part and a knowledge sharing community in another. 
+AGeekSleek is a blog in one part and a knowledge sharing community in another.
 There's also a discord server and some info on how you can reach me in case you want to contribute or just have a conversation.
-There's an instagram account, a Facebook 
+There's an instagram account, a Facebook
 
 The content of the blog part is static for the most common parts.
 
