@@ -15,7 +15,7 @@
         "gulp-cli": "^2.3.0",
         "gulp-inject-string": "^1.1.2",
         "gulp-nunjucks": "^5.1.0",
-        "gulp-sass": "^4.1.0",
+        "gulp-sass": "^5.0.0",
         "swiper": "^6.5.7"
     }
 }
